@@ -4,7 +4,7 @@ A library for writing self-modifying tests -- also known as snapshot tests or ex
 
 Write your tests:
 
-```janet
+```clojure
 # test.janet
 (use judge)
 
@@ -24,7 +24,7 @@ expect failed
 
 And look! It fixed your tests:
 
-```janet
+```clojure
 # test.janet.corrected
 (use judge)
 
@@ -38,7 +38,7 @@ You can then diff the `.corrected` file with your original source and interactiv
 
 The first form passed to the `(test)` macro is the name of the test. It can be a symbol or a string:
 
-```janet
+```clojure
 (use judge)
 
 (test math
@@ -52,7 +52,7 @@ The `(expect)` macro can only appear inside the `(test)` macro (or any custom te
 
 If you call `(expect)` multiple times within a test invocation, every result will be checked in order:
 
-```janet
+```clojure
 (use /judge)
 
 (defn capitalize [str]
@@ -67,7 +67,7 @@ If you call `(expect)` multiple times within a test invocation, every result wil
 
 This imperative style might, sometimes, be more convenient than the more functional equivalent:
 
-```janet
+```clojure
 (test "test capitalization"
   (expect (map capitalize ["eleanor" "chidi" "tahani" "jason"])
     ["Eleanor" "Chidi" "Tahani" "Jason"]))
@@ -79,7 +79,7 @@ There is currently no macro that lets you call `(expect)` multiple times and ass
 
 When you `(use judge)`, you will bring a `main` function into scope that actually runs the tests. If you'd rather do something more complicated -- for example, import tests from multiple different files and run them at the same time -- just invoke the `judge/main` function directly, or define your own `main` to point to it.
 
-```janet
+```clojure
 (import judge)
 
 (use /tests/simple-tests)
@@ -98,7 +98,7 @@ Sometimes you might have a bunch of tests that all need some kind of shared cont
 
 To declare a new test type, use the `deftest` macro:
 
-```
+```clojure
 (deftest custom-test
   :setup (fn [] (create-some-expensive-shared-resource))
   :reset (fn [context] (wipe-clean context))
@@ -107,7 +107,7 @@ To declare a new test type, use the `deftest` macro:
 
 This will declare a macro called `custom-test`, which you can then use like the regular `test` macro:
 
-```janet
+```clojure
 (custom-test "some kind of test"
   (do-something))
 ```
@@ -116,14 +116,14 @@ The first time the test-runner encounters a test declared with the `custom-test`
 
 The context returned from `:setup` will also be available to the test itself, as `$`:
 
-```janet
+```clojure
 (custom-test "some kind of test"
   (do-something-with-context $))
 ```
 
 If you want to give it a custom name, add a binding form after the test name:
 
-```janet
+```clojure
 (custom-test "some kind of test" [my-context]
   (do-something-with-context my-context))
 ```
@@ -143,7 +143,7 @@ The macros themselves work pretty well, but the actual "test runner" bit is pret
 
 Another shortcoming is that the source code modifier is very primitive. It doesn't preserve formatting *within* an `(expect)` form. So, for example, if you write something like this:
 
-```janet
+```clojure
 (expect
     (+ 2
       2) 
@@ -152,7 +152,7 @@ Another shortcoming is that the source code modifier is very primitive. It doesn
 
 That will be replaced with the one-line expression:
 
-```janet
+```clojure
 (expect (+ 2 2) 4)
 ```
 
