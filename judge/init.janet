@@ -33,29 +33,13 @@
     (array/push (,expectation :actual) ,expression)
     (set (,expectation :expected) (quote ,results))))
 
-(defn- get-symbol-prefix [sym]
-  (def components (string/split "/" sym))
-  (if (= (length components) 1)
-    nil
-    (in components 0)))
-
-(defn- prefix-symbol [sym prefix]
-  (if prefix
-    (symbol prefix "/" sym)
-    sym))
-
-# Is there some official way to do this? This seems like it would
-# be necessary in basically any nontrivial macro.
-(defn- prefix-macro [macro-sym]
-  (def symbol-prefix (get-symbol-prefix (in (dyn :macro-form) 0)))
-  (prefix-symbol macro-sym symbol-prefix))
-
 (defn- validate-test-name [name]
   (unless (or (symbol? name) (string? name))
     (errorf "test name must be a symbol or a string, got %j" name)))
 
-(def- test-with-args-sym (gensym))
-(eval ~(defmacro ,test-with-args-sym [name args forms]
+# this is a function, not a macro, but it returns forms representing
+# a test. it's meant to be called from within other macros.
+(defn- test-with-args [name args forms]
   (def filename (dyn :current-file))
   (when (not (file-contents filename))
     (def source-file (file/open filename :rn))
@@ -84,11 +68,11 @@
       (dyn :test-type)
       ,name
       (fn ,args ,;expanded-forms)
-      ,expect-results-sym))))
+      ,expect-results-sym)))
 
 (defmacro test [name & forms]
   (validate-test-name name)
-  ~(,(prefix-macro test-with-args-sym) ,name [] ,forms))
+  (test-with-args name [] forms))
 
 (defn- freeze-with-brackets [x]
   (case (type x)
@@ -113,12 +97,10 @@
 
 (defmacro deftest [macro-name &keys { :setup setup :reset reset :teardown teardown }]
   (def test-type-id (gensym))
-  (def test-with-args-sym (prefix-macro test-with-args-sym))
   ~(upscope
     (,register-test-type (quote ,test-type-id) { :setup ,setup :reset ,reset :teardown ,teardown })
     (defmacro ,macro-name [name & forms]
       (def dynamic-bindings '[:test-type (quote ,test-type-id)])
-      (def test-with-args-sym (quote ,test-with-args-sym))
       
       (,validate-test-name name)
       (when (empty? forms)
@@ -131,7 +113,7 @@
           '[$]))
       
       ~(with-dyns ,dynamic-bindings
-        (,test-with-args-sym ,name ,args-form ,forms)))))
+        ,(,test-with-args name args-form forms)))))
 
 (defn- categorize-tests [tests]
   (var last-seen-tests-by-type @{})
