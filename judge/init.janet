@@ -12,7 +12,7 @@
 
 (defmacro expect [expression & results]
   (def expect-results (dyn :expect-results))
-  (def expect-results-sym (dyn :expect-results-sym))
+  (def $expect-results (dyn :$expect-results))
   (unless expect-results
     (error "expect must occur within a test definition"))
   (def expect-id (length expect-results))
@@ -28,7 +28,7 @@
   (set (expect-results expect-id)
     @{ :macro-form ~(quote ,(dyn :macro-form))
        :actual @[] })
-  (def expectation (tuple expect-results-sym expect-id))
+  (def expectation (tuple $expect-results expect-id))
   ~(do
     (array/push (,expectation :actual) ,expression)
     (set (,expectation :expected) (quote ,results))))
@@ -53,22 +53,22 @@
   (def name (string name))
 
   (def expect-results @{})
-  (def expect-results-sym (gensym))
+  (def $expect-results (gensym))
   # If we could just dynamically define macros, we wouldn't have
   # to do this. Instead we use with-dyns to "pass arguments" to
   # the (expect) macro.
   (def expanded-forms
     (with-dyns [:expect-results expect-results
-                :expect-results-sym expect-results-sym]
+                :$expect-results $expect-results]
       (macex forms)))
   ~(do
-    (def ,expect-results-sym ,expect-results)
+    (def ,$expect-results ,expect-results)
     (,register-test
       (dyn :current-file)
       (dyn :test-type)
       ,name
       (fn ,args ,;expanded-forms)
-      ,expect-results-sym)))
+      ,$expect-results)))
 
 (defmacro test [name & forms]
   (validate-test-name name)
