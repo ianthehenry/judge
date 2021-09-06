@@ -4,16 +4,11 @@
 (def- all-tests @[])
 (def- file-contents @{})
 
-# This is my way to make a *basically private* function. I want
-# to be able to call this function from macro expansions here,
-# but I want it to be otherwise completely private.
-(def- register-test-sym (gensym))
-(eval ~(defn ,register-test-sym [filename test-type name f expect-results]
-  (array/push all-tests [filename test-type name f expect-results])))
+(defn- register-test [filename test-type name f expect-results]
+  (array/push all-tests [filename test-type name f expect-results]))
 
-(def- register-test-type-sym (gensym))
-(eval ~(defn ,register-test-type-sym [id test-type]
-  (set (test-types id) test-type)))
+(defn- register-test-type [id test-type]
+  (set (test-types id) test-type))
 
 (defmacro expect [expression & results]
   (def expect-results (dyn :expect-results))
@@ -55,10 +50,9 @@
   (def symbol-prefix (get-symbol-prefix (in (dyn :macro-form) 0)))
   (prefix-symbol macro-sym symbol-prefix))
 
-(def- validate-test-name-sym (gensym))
-(eval ~(defn ,validate-test-name-sym [name]
+(defn- validate-test-name [name]
   (unless (or (symbol? name) (string? name))
-    (errorf "test name must be a symbol or a string, got %j" name))))
+    (errorf "test name must be a symbol or a string, got %j" name)))
 
 (def- test-with-args-sym (gensym))
 (eval ~(defmacro ,test-with-args-sym [name args forms]
@@ -85,7 +79,7 @@
       (macex forms)))
   ~(do
     (def ,expect-results-sym ,expect-results)
-    (,(prefix-macro register-test-sym)
+    (,register-test
       (dyn :current-file)
       (dyn :test-type)
       ,name
@@ -93,7 +87,7 @@
       ,expect-results-sym))))
 
 (defmacro test [name & forms]
-  ((eval (prefix-macro validate-test-name-sym)) name)
+  (validate-test-name name)
   ~(,(prefix-macro test-with-args-sym) ,name [] ,forms))
 
 (defn- freeze-with-brackets [x]
@@ -120,15 +114,13 @@
 (defmacro deftest [macro-name &keys { :setup setup :reset reset :teardown teardown }]
   (def test-type-id (gensym))
   (def test-with-args-sym (prefix-macro test-with-args-sym))
-  (def register-test-type-sym (prefix-macro register-test-type-sym))
-  (def validate-test-name-sym (prefix-macro validate-test-name-sym))
   ~(upscope
-    (,register-test-type-sym (quote ,test-type-id) { :setup ,setup :reset ,reset :teardown ,teardown })
+    (,register-test-type (quote ,test-type-id) { :setup ,setup :reset ,reset :teardown ,teardown })
     (defmacro ,macro-name [name & forms]
       (def dynamic-bindings '[:test-type (quote ,test-type-id)])
       (def test-with-args-sym (quote ,test-with-args-sym))
       
-      (,validate-test-name-sym name)
+      (,validate-test-name name)
       (when (empty? forms)
         (error "cannot create a test with no body"))
 
