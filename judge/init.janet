@@ -4,8 +4,12 @@
 (def- all-tests @[])
 (def- file-contents @{})
 
-(defn- register-test [filename test-type name f expect-results]
-  (array/push all-tests [filename test-type name f expect-results]))
+(defn- register-test [filename type-id name body expect-results]
+  (array/push all-tests {:filename filename
+                         :type-id type-id
+                         :name name
+                         :body body
+                         :expect-results expect-results}))
 
 (defn- register-test-type [id test-type]
   (set (test-types id) test-type))
@@ -94,5 +98,5 @@
       ~(with-dyns ,dynamic-bindings
         ,(,test-with-args name args-form forms)))))
 
-(defn main [args]
+(defn main [& args]
   (runner/run-tests all-tests test-types file-contents))
