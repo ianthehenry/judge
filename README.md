@@ -36,6 +36,8 @@ You can then diff the `.corrected` file with your original source and interactiv
 
 ## Usage
 
+### Writing tests
+
 The first form passed to the `(test)` macro is the name of the test. It can be a symbol or a string:
 
 ```clojure
@@ -75,7 +77,27 @@ This imperative style might, sometimes, be more convenient than the more functio
 
 There is currently no macro that lets you call `(expect)` multiple times and assert that you get the same result every time, but I realize writing this documentation that that might be useful.
 
----
+### Running tests
+
+Run all tests:
+
+    janet test.janet
+
+Run a specific test:
+
+    janet test.janet --name 'two plus'
+
+Run test on a specific line/column (useful for editor tooling):
+
+    janet test.janet --at test.janet:10:2
+
+You can also pass positional arguments, and those will be treated either as test names or locations depending on whether or not they can be parsed as `file:line:col`.
+
+You can also exclude certain tests:
+
+    janet test.janet --not-name 'two plus two is four'
+
+### A note about `main`
 
 When you `(use judge)`, you will bring a `main` function into scope that actually runs the tests. If you'd rather do something more complicated -- for example, import tests from multiple different files and run them at the same time -- just invoke the `judge/main` function directly, or define your own `main` to point to it.
 
