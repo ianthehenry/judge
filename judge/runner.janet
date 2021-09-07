@@ -120,12 +120,14 @@
       "not-name"       {:kind :accumulate :help "remove a test by name (prefix match)"}
       "not-name-exact" {:kind :accumulate :help "remove a test by name (exact match)"}
       "not-at"         {:kind :accumulate :help "remove a test by file:line:col"}
-      "interactive"    {:kind :flag :short "i" :help "prompt for replacements"}
+      # "interactive"    {:kind :flag :short "i" :help "prompt for replacements"}
       "accept"         {:kind :flag :short "a" :help "overwrite files with .corrected files"}
       :default         {:kind :accumulate :help "list of targets"}))
 
   (defn get-arg [name default]
     (or (in args name) default))
+
+  (def accept-corrected-files (get-arg "accept" false))
 
   (def includes
     (array/concat @[]
@@ -242,12 +244,15 @@
       (++ tests-failed)
       (++ tests-passed)))
 
-  (each [file replacements] (pairs replacements-by-file)
-    (def corrected-filename (string file ".corrected"))
+  (each [filename replacements] (pairs replacements-by-file)
+    (def corrected-filename (string filename ".corrected"))
     (if (empty? replacements)
       (rm-p corrected-filename)
-      (write-file corrected-filename
-        (rewriter/rewrite-forms (file-contents file) replacements))))
+      (do
+        (write-file corrected-filename
+          (rewriter/rewrite-forms (file-contents filename) replacements))
+        (when accept-corrected-files
+          (os/rename corrected-filename filename)))))
 
   (def tests-excluded (- (length all-tests) (length tests-to-run)))
 
