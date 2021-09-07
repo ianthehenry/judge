@@ -65,32 +65,32 @@
 (defn parse-target [str]
   (def components (string/split ":" str))
   (when (not= (length components) 3)
-    (errorf "unable to parse %s as file:line:col" str))
+    (errorf "unable to parse %s as filename:line:col" str))
 
-  (let [[file line col] components
+  (let [[filename line col] components
         line (scan-int line)
         col (scan-int col)]
-    {:file file :pos [line col]}))
+    {:filename filename :pos [line col]}))
 
-(defn pos-in-form [source form pos]
+(defn pos-in-form? [source form-pos target-pos]
   # TODO: We do this splitting a lot. Like, for each file, we do this
   # (number of tests * number of times this file appears in a target).
   # This is inefficient and could be easily memoized. But also: who cares.
   (def source-lines (string/split "\n" source))
 
-  (def form-start-index (util/pos-to-byte-index source-lines (tuple/sourcemap form)))
+  (def form-start-index (util/pos-to-byte-index source-lines form-pos))
   (def form-length (util/get-form-length source form-start-index))
-  (def target-start-index (util/pos-to-byte-index source-lines pos))
+  (def target-start-index (util/pos-to-byte-index source-lines target-pos))
 
   (and (>= target-start-index form-start-index)
        (< target-start-index (+ form-start-index form-length))))
 
 (defn matches [file-contents test [predicate-type predicate-arg]]
   (case predicate-type
-    :location (and (= (test :file) (predicate-arg :file))
-                   (pos-in-form (in file-contents (test :file))
-                                (test :macro-form)
-                                (predicate-arg :pos)))
+    :location (and (= (test :filename) (predicate-arg :filename))
+                   (pos-in-form? (in file-contents (test :filename))
+                                 (test :pos)
+                                 (predicate-arg :pos)))
     :name-prefix (string/has-prefix? predicate-arg (test :name))
     :name-exact (= predicate-arg (test :name))))
 
@@ -164,8 +164,6 @@
     (var setup-complete true)
     (var reset-complete true)
     (var test-errored false)
-
-    (eprint "running test: " name)
 
     (when (and first-test-of-type? (type-fns :setup))
       (set (test-contexts type-id)

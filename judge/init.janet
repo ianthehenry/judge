@@ -4,12 +4,8 @@
 (def- all-tests @[])
 (def- file-contents @{})
 
-(defn- register-test [filename type-id name body expect-results]
-  (array/push all-tests {:filename filename
-                         :type-id type-id
-                         :name name
-                         :body body
-                         :expect-results expect-results}))
+(defn- register-test [test]
+  (array/push all-tests test))
 
 (defn- register-test-type [id test-type]
   (set (test-types id) test-type))
@@ -68,11 +64,13 @@
   ~(do
     (def ,$expect-results ,expect-results)
     (,register-test
-      (dyn :current-file)
-      (dyn :test-type)
-      ,name
-      (fn ,args ,;expanded-forms)
-      ,$expect-results)))
+      {:filename (dyn :current-file)
+       :pos (quote ,(tuple/sourcemap (dyn :macro-form)))
+       :type-id (dyn :test-type)
+       :name ,name
+       :body (fn ,args ,;expanded-forms)
+       :expect-results ,$expect-results
+       })))
 
 (defmacro test [name & forms]
   (validate-test-name name)
@@ -84,7 +82,7 @@
     (,register-test-type (quote ,test-type-id) { :setup ,setup :reset ,reset :teardown ,teardown })
     (defmacro ,macro-name [name & forms]
       (def dynamic-bindings '[:test-type (quote ,test-type-id)])
-      
+
       (,validate-test-name name)
       (when (empty? forms)
         (error "cannot create a test with no body"))
