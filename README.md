@@ -6,6 +6,7 @@ Write your tests:
 
 ```clojure
 # test.janet
+
 (use judge)
 
 (test "basic math"
@@ -26,6 +27,7 @@ And look! It fixed your tests:
 
 ```clojure
 # test.janet.corrected
+
 (use judge)
 
 (test "basic math"
@@ -55,7 +57,7 @@ The `(expect)` macro can only appear inside the `(test)` macro (or any custom te
 If you call `(expect)` multiple times within a test invocation, every result will be checked in order:
 
 ```clojure
-(use /judge)
+(use judge)
 
 (defn capitalize [str]
   (string
@@ -110,9 +112,7 @@ When you `(use judge)`, you will bring a `main` function into scope that actuall
 (def main judge/main)
 ```
 
-This isn't necessary if you're writing simple tests and putting them all in the `test/` subdirectory -- `jpm test` will run all of them. But it has some advantages:
-
-`jpm test` stops running tests after the first failing test file. By importing multiple files into a single test runner, you can run all your tests and see all the failures at once. It can also be much faster, if you're writing...
+This isn't necessary if you're writing simple tests and putting them all in the `test/` subdirectory -- `jpm test` will run all of them. But it has one big advantage: `jpm test` stops running tests after the first failing test file. By importing multiple files into a single test runner, you can run all your tests and see all the failures at once. It can also be much faster, if you're writing...
 
 ### Context-dependent tests
 
@@ -130,24 +130,17 @@ To declare a new test type, use the `deftest` macro:
 This will declare a macro called `custom-test`, which you can then use like the regular `test` macro:
 
 ```clojure
-(custom-test "some kind of test"
-  (do-something))
+(custom-test "some kind of test" [context]
+  (do-something-with context))
 ```
 
 The first time the test-runner encounters a test declared with the `custom-test` macro, it will first call the `:setup` function. Then it will call the `:reset` function, passing it whatever context `:setup` returned. Then it will run the test, and move on to the next test in its list of tests to run. Any time it needs to run a test declared with the `custom-test` macro, it will run the `:reset` function again, passing it the same context value. Then, after the final `custom-test` has completed, it will run the `:teardown` function.
 
-The context returned from `:setup` will also be available to the test itself, as `$`:
+The binding form after the test name is optional. If you omit it, the context returned from `:setup` will be named `$` by default.
 
 ```clojure
 (custom-test "some kind of test"
-  (do-something-with-context $))
-```
-
-If you want to give it a custom name, add a binding form after the test name:
-
-```clojure
-(custom-test "some kind of test" [my-context]
-  (do-something-with-context my-context))
+  (do-something-with $))
 ```
 
 Just to recap: if the test-runner is running *N* custom tests, it will run setup once, reset *N* times, and teardown once.
@@ -159,7 +152,7 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 The macros themselves work pretty well, but the actual "test runner" bit is pretty basic and needs some work. For example:
 
 - test output is really bad
-- there's no way to only run a subset of tests in the same file
+- there's no interactive mode for select corrections
 - there's no way to automatically diff or accept corrections
 - doesn't currently skip context-dependent tests if :setup or :reset fails
 
@@ -184,6 +177,4 @@ There's also no stdout redirect/output embedding, which is a pretty useful thing
 
 ## Caveats
 
-There's a potential race with file contents that may cause errors patching files, because we will read and cache the file during compilation -- necessarily after Janet has already read the file. If the file changes in betrween the time that Janet begins executing the test and the time that the test reads its source file, you will probably get patch errors. This is very unlikely, but it's worth mentioning.
-
-The `(test)` macro expands to a form that invokes a function defined in the `expect` module. It tries to be smart and call the function in a way that will work whether the module was loaded with `(use)` or with `(import)`, but if you import with a custom prefix that does not end in a `/` character, this will fail, and you will get an error about "unknown symbol `_0000A`" (or something).
+There's a potential race with file contents that may cause errors patching files, because Judge will read and cache the file during compilation -- necessarily after Janet has already read the file. If the file has changed in between the time that Janet began compiling the test and the time that Judge reads the source file, you will probably get patch errors. This... is very unlikely, but it's worth mentioning.
