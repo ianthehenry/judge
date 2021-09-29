@@ -111,6 +111,17 @@
     [:location (parse-target x)]
     ([_] [:name-prefix x])))
 
+(defn safely-accept-corrections [corrected-filename original-filename file-contents]  
+  (def current-file-contents
+    (with [source-file (file/open original-filename :rn)]
+      (string (file/read source-file :all))))
+
+  (if (= (file-contents original-filename) current-file-contents)
+    (os/rename corrected-filename original-filename)
+    (eprint
+      (colorize/fgf :yellow "source file %s has changed; refusing to overwrite with .corrected file"
+        original-filename))))
+
 (defn run-tests [all-tests test-types file-contents]
   (def args
     (argparse "Runs matching tests. If no tests are added explicitly, all tests are added."
@@ -258,7 +269,7 @@
         (write-file corrected-filename
           (rewriter/rewrite-forms (file-contents filename) replacements))
         (when accept-corrected-files
-          (os/rename corrected-filename filename)))))
+          (safely-accept-corrections corrected-filename filename file-contents)))))
 
   (def tests-excluded (- (length all-tests) (length tests-to-run)))
 

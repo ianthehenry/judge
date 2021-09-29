@@ -42,10 +42,8 @@
 (defn- test-with-args [name args forms]
   (def filename (dyn :current-file))
   (when (not (file-contents filename))
-    (def source-file (file/open filename :rn))
-    (def source
-      (defer (file/close source-file)
-        (file/read source-file :all)))
+    (def source (with [source-file (file/open filename :rn)]
+      (string (file/read source-file :all))))
     (when (nil? source)
       (errorf "could not read file contents %s" filename))
     (set (file-contents filename) source))
