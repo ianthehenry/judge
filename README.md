@@ -151,10 +151,8 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 
 The macros themselves work pretty well, but the actual "test runner" bit is pretty basic and needs some work. For example:
 
-- test output is really bad
-- there's no interactive mode for select corrections
-- there's no way to automatically diff or accept corrections
-- doesn't currently skip context-dependent tests if :setup or :reset fails
+- test output isn't very pretty
+- there's no interactive mode to select particular corrections
 
 Another shortcoming is that the source code modifier is very primitive. It doesn't preserve formatting *within* an `(expect)` form. So, for example, if you write something like this:
 
