@@ -16,6 +16,10 @@
   (when false
     (expect 1 2)))
 
+(test "unreachable due to exception"
+  (error "hello")
+  (expect 1 1))
+
 (deftest printy-test
   :setup (fn [] (print "setting up") 1)
   :reset (fn [context] (printf "resetting, context = %j" context))

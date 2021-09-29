@@ -151,6 +151,14 @@
   (var resets-errored 0)
   (def test-contexts @{})
 
+  (defn print-context-error [msg test-type]
+    (eprint
+      (colorize/fgf :red "%s for \"%j\"" msg (test-type :name))
+      (colorize/dimf " (%s:%i:%i)"
+        (test-type :filename)
+        ((test-type :location) 0)
+        ((test-type :location) 1))))
+
   (each { :first-test-of-type? first-test-of-type?
           :last-test-of-type? last-test-of-type?
           :type-fns type-fns
@@ -161,30 +169,31 @@
           :expect-results expect-results }
         (categorize-tests tests-to-run test-types)
 
-    (var setup-complete true)
-    (var reset-complete true)
-    (var test-errored false)
-
     (when (and first-test-of-type? (type-fns :setup))
+      # for some reason lifting the set out of the try causes the stacktrace
+      # to omit the runner file, which is nice
       (set (test-contexts type-id)
         (try ((type-fns :setup))
           ([e fib]
-            (set setup-complete false)
-            # TODO: should say the name of the test type here
-            (eprint "error initializing context")
+            (print-context-error "error initializing context" type-fns)
             (debug/stacktrace fib e)
             nil))))
 
-    (when (and setup-complete reset-complete type-id (type-fns :reset))
+    (def setup-complete
+      (or (nil? type-id)
+          (not (nil? (test-contexts type-id)))))
+
+    (var reset-complete true)
+    (when (and setup-complete type-id (type-fns :reset))
       (try ((type-fns :reset) (test-contexts type-id))
         ([e fib]
           (set reset-complete false)
-          # TODO: should say the name of the test type here
-          (eprint "error resetting context")
+          (print-context-error "error resetting context" type-fns)
           (debug/stacktrace fib e))))
 
     (def skip-test (not (and setup-complete reset-complete)))
 
+    (var test-errored false)
     (unless skip-test
       (eprint "running test: " name)
       (try
@@ -193,11 +202,11 @@
           (body))
         ([e fib]
           (set test-errored true)
-          (eprint "test failed")
+          (eprint (colorize/fg :red name " raised:"))
           (debug/stacktrace fib e))))
 
     (when skip-test
-      (eprint "unable to run test: " name)
+      (eprint (colorize/fg :red "unable to run test: " name))
       (++ tests-skipped))
 
     (when (and setup-complete last-test-of-type? (type-fns :teardown))
@@ -222,7 +231,7 @@
       (if (empty? actual)
         (do
           (set any-expectation-failed true)
-          (eprint "unreachable expect")
+          (eprint (colorize/fg :red "unreachable expect: " name))
           (eprint (colorize/fg :red "- " (prettify macro-form))))
         (when (deep-not= actual expected)
           (set any-expectation-failed true)
@@ -230,13 +239,12 @@
           (def replacement-form 
             (tuple ;(array/concat @[] (tuple/slice macro-form 0 2) actual)))
 
-          (eprint "expect failed")
           (eprint (colorize/fg :red "- " (prettify macro-form)))
           (eprint (colorize/fg :green "+ " (prettify replacement-form)))
 
           (array/push (replacements-by-file filename)
             [(tuple/sourcemap macro-form) 
-             (string/format "%j" replacement-form)]))))
+             (prettify replacement-form)]))))
 
     (if (or test-errored any-expectation-failed)
       (++ tests-failed)

@@ -19,5 +19,17 @@
 (defn fg [color & strs]
   (string "\e[" (encode color foreground) "m" ;strs "\e[0m"))
 
+(defn fgf [color & strs]
+  (fg color (string/format ;strs)))
+
+(defn dim [& strs]
+  (string "\e[2m" ;strs "\e[0m"))
+
+(defn dimf [& strs]
+  (dim (string/format ;strs)))
+
 (defn bg [color & strs]
   (string "\e[" (encode color background) "m" ;strs "\e[0m"))
+
+(defn bgf [color & strs]
+  (bg color (string/format ;strs)))

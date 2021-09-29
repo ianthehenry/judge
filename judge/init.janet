@@ -78,8 +78,17 @@
 
 (defmacro deftest [macro-name &keys { :setup setup :reset reset :teardown teardown }]
   (def test-type-id (gensym))
+  (def location (tuple/sourcemap (dyn :macro-form)))
+  (def filename (dyn :current-file))
   ~(upscope
-    (,register-test-type (quote ,test-type-id) { :setup ,setup :reset ,reset :teardown ,teardown })
+    (,register-test-type (quote ,test-type-id) 
+      { :setup ,setup
+        :reset ,reset
+        :teardown ,teardown
+        :name (quote ,macro-name)
+        :location (quote ,location) 
+        :filename ,filename
+        })
     (defmacro ,macro-name [name & forms]
       (def dynamic-bindings '[:test-type (quote ,test-type-id)])
 
