@@ -5,7 +5,7 @@
   :license "MIT"
   :url "https://github.com/ianthehenry/judge"
   :repo "git+https://github.com/ianthehenry/judge"
-  :dependencies ["https://github.com/janet-lang/argparse"])
+  :dependencies ["https://github.com/janet-lang/spork"])
 
 (declare-source
   :source ["judge"])

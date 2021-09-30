@@ -54,7 +54,7 @@
 # so i want to make different types of runners... one that
 # just prints things (with or without colors)
 
-(use argparse)
+(use spork/argparse)
 
 (defn scan-int [x]
   (let [num (scan-number x)]
@@ -101,7 +101,7 @@
     (if (empty? includes)
       (fn [_] true)
       (fn [test] (some |(matches file-contents test $) includes))))
-  
+
   (defn exclude? [test] (some |(matches file-contents test $) excludes))
 
   (fn [test] (and (include? test) (not (exclude? test)))))
@@ -111,7 +111,7 @@
     [:location (parse-target x)]
     ([_] [:name-prefix x])))
 
-(defn safely-accept-corrections [corrected-filename original-filename file-contents]  
+(defn safely-accept-corrections [corrected-filename original-filename file-contents]
   (def current-file-contents
     (with [source-file (file/open original-filename :rn)]
       (string (file/read source-file :all))))
@@ -176,7 +176,7 @@
           :type-id type-id
           :filename filename
           :name name
-          :body body 
+          :body body
           :expect-results expect-results }
         (categorize-tests tests-to-run test-types)
 
@@ -247,14 +247,14 @@
         (when (deep-not= actual expected)
           (set any-expectation-failed true)
 
-          (def replacement-form 
+          (def replacement-form
             (tuple ;(array/concat @[] (tuple/slice macro-form 0 2) actual)))
 
           (eprint (colorize/fg :red "- " (prettify macro-form)))
           (eprint (colorize/fg :green "+ " (prettify replacement-form)))
 
           (array/push (replacements-by-file filename)
-            [(tuple/sourcemap macro-form) 
+            [(tuple/sourcemap macro-form)
              (prettify replacement-form)]))))
 
     (if (or test-errored any-expectation-failed)
