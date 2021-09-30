@@ -1,7 +1,7 @@
 (use judge)
 
 (deftest stateful-test
-  :setup (fn [] @{ :n 0 })
+  :setup (fn [] @{:n 0})
   :reset (fn [context] (set (context :n) 0)))
 
 (stateful-test "initial state" [state]
@@ -24,7 +24,7 @@
   (error "unreachable"))
 
 (deftest erroneous-reset
-  :setup (fn [] @{ :n 0 })
+  :setup (fn [] @{:n 0})
   :reset (fn [context] (error "oh dear")))
 
 (erroneous-reset "test that will be skipped for a different reason"

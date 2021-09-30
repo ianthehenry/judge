@@ -8,7 +8,7 @@
     (var invalid-to 0)
     (each [start len _] replacements
       (when (> invalid-to start)
-        (error "overlapping replacements" ))
+        (error "overlapping replacements"))
       (set invalid-to (+ start len))))
 
   (def components @[])
@@ -26,8 +26,8 @@
   (def source-lines (string/split "\n" source))
 
   (->> replacements
-    (map (fn [[form-pos replacement]]
-      (def form-start (pos-to-byte-index source-lines form-pos))
-      (def form-length (get-form-length source form-start))
-      [form-start form-length replacement]))
-    (string-splice source)))
+       (map (fn [[form-pos replacement]]
+              (def form-start (pos-to-byte-index source-lines form-pos))
+              (def form-length (get-form-length source form-start))
+              [form-start form-length replacement]))
+       (string-splice source)))

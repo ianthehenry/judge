@@ -26,12 +26,12 @@
   # - We could get rid of the initial :actual and check every time we run
   #   expect, but... whatever.
   (set (expect-results expect-id)
-    @{ :macro-form ~(quote ,(dyn :macro-form))
-       :actual @[] })
+       @{:macro-form ~(quote ,(dyn :macro-form))
+         :actual @[]})
   (def expectation (tuple $expect-results expect-id))
   ~(do
-    (array/push (,expectation :actual) ,expression)
-    (set (,expectation :expected) (quote ,results))))
+     (array/push (,expectation :actual) ,expression)
+     (set (,expectation :expected) (quote ,results))))
 
 (defn- validate-test-name [name]
   (unless (or (symbol? name) (string? name))
@@ -43,7 +43,7 @@
   (def filename (dyn :current-file))
   (when (not (file-contents filename))
     (def source (with [source-file (file/open filename :rn)]
-      (string (file/read source-file :all))))
+                  (string (file/read source-file :all))))
     (when (nil? source)
       (errorf "could not read file contents %s" filename))
     (set (file-contents filename) source))
@@ -60,48 +60,47 @@
                 :$expect-results $expect-results]
       (macex forms)))
   ~(do
-    (def ,$expect-results ,expect-results)
-    (,register-test
-      {:filename (dyn :current-file)
-       :pos (quote ,(tuple/sourcemap (dyn :macro-form)))
-       :type-id (dyn :test-type)
-       :name ,name
-       :body (fn ,args ,;expanded-forms)
-       :expect-results ,$expect-results
-       })))
+     (def ,$expect-results ,expect-results)
+     (,register-test
+       {:filename (dyn :current-file)
+        :pos (quote ,(tuple/sourcemap (dyn :macro-form)))
+        :type-id (dyn :test-type)
+        :name ,name
+        :body (fn ,args ,;expanded-forms)
+        :expect-results ,$expect-results})))
 
 (defmacro test [name & forms]
   (validate-test-name name)
   (test-with-args name [] forms))
 
-(defmacro deftest [macro-name &keys { :setup setup :reset reset :teardown teardown }]
+(defmacro deftest [macro-name &keys {:setup setup :reset reset :teardown teardown}]
   (def test-type-id (gensym))
   (def location (tuple/sourcemap (dyn :macro-form)))
   (def filename (dyn :current-file))
   ~(upscope
-    (,register-test-type (quote ,test-type-id) 
-      { :setup ,setup
+     (,register-test-type
+       (quote ,test-type-id)
+       {:setup ,setup
         :reset ,reset
         :teardown ,teardown
         :name (quote ,macro-name)
-        :location (quote ,location) 
-        :filename ,filename
-        })
-    (defmacro ,macro-name [name & forms]
-      (def dynamic-bindings '[:test-type (quote ,test-type-id)])
+        :location (quote ,location)
+        :filename ,filename})
+     (defmacro ,macro-name [name & forms]
+       (def dynamic-bindings '[:test-type (quote ,test-type-id)])
 
-      (,validate-test-name name)
-      (when (empty? forms)
-        (error "cannot create a test with no body"))
+       (,validate-test-name name)
+       (when (empty? forms)
+         (error "cannot create a test with no body"))
 
-      (def first-form (in forms 0))
-      (def args-form
-        (if (and (tuple? first-form) (= (tuple/type first-form) :brackets))
-          first-form
-          '[$]))
-      
-      ~(with-dyns ,dynamic-bindings
-        ,(,test-with-args name args-form forms)))))
+       (def first-form (in forms 0))
+       (def args-form
+         (if (and (tuple? first-form) (= (tuple/type first-form) :brackets))
+           first-form
+           '[$]))
+
+       ~(with-dyns ,dynamic-bindings
+          ,(,test-with-args name args-form forms)))))
 
 (defn main [& args]
   (runner/run-tests all-tests test-types file-contents))
