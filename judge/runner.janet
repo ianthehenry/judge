@@ -186,7 +186,7 @@
         (try ((type-fns :setup))
           ([e fib]
             (print-context-error "error initializing context" type-fns)
-            (debug/stacktrace fib e)
+            (debug/stacktrace fib e "")
             nil))))
 
     (def setup-complete
@@ -199,7 +199,7 @@
         ([e fib]
           (set reset-complete false)
           (print-context-error "error resetting context" type-fns)
-          (debug/stacktrace fib e))))
+          (debug/stacktrace fib e ""))))
 
     (def skip-test (not (and setup-complete reset-complete)))
 
@@ -213,7 +213,7 @@
         ([e fib]
           (set test-errored true)
           (eprint (colorize/fg :red name " raised:"))
-          (debug/stacktrace fib e))))
+          (debug/stacktrace fib e ""))))
 
     (when skip-test
       (eprint (colorize/fg :red "unable to run test: " name))
@@ -225,7 +225,7 @@
           (++ resets-errored)
           # TODO: should say the name of the test type here. This should
           (eprint "unable to tear down test")
-          (debug/stacktrace fib e))))
+          (debug/stacktrace fib e ""))))
 
     (unless (replacements-by-file filename)
       (set (replacements-by-file filename) @[]))
