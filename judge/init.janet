@@ -1,5 +1,7 @@
 (import ./runner)
 
+(def- $top-secret-result-symbol (symbol (string "EXPECT_MUST_OCCUR_WITHIN_TEST_BODY" (gensym))))
+
 (def- test-types @{})
 (def- all-tests @[])
 (def- file-contents @{})
@@ -10,32 +12,22 @@
 (defn- register-test-type [id test-type]
   (set (test-types id) test-type))
 
-(defmacro expect [expression & results]
-  (def expect-results (dyn :expect-results))
-  (def $expect-results (dyn :$expect-results))
-  (unless expect-results
-    (error "expect must occur within a test definition"))
-  (def expect-id (length expect-results))
-  # - After all the expects have been expanded for a given test,
-  #   (test) is going to expand to include the value of this table.
-  #   But obviously we aren't embedding a *value*, we're embedding a
-  #   *form* that looks like this value. So it's important that we quote
-  #   the :macro-form, so that it doesn't try to expand it *again* during
-  #   the recursive expansion phase.
-  #
-  # - We could get rid of the initial :actual and check every time we run
-  #   expect, but... whatever.
-  (set (expect-results expect-id)
-    @{:macro-form ~(quote ,(dyn :macro-form))
-      :actual @[]})
-  (def expectation (tuple $expect-results expect-id))
-  ~(do
-    (array/push (,expectation :actual) ,expression)
-    (set (,expectation :expected) (quote ,results))))
+(defn- get-or-set [table key get-default]
+  (if-let [value (table key)]
+    value
+    (set (table key) (get-default))))
 
-(defn- validate-test-name [name]
-  (unless (or (symbol? name) (string? name))
-    (errorf "test name must be a symbol or a string, got %j" name)))
+(defmacro expect [expression & results]
+  (let [expect-id (gensym)
+        $expectation (gensym)]
+    ~(let [,$expectation
+            (,get-or-set
+              ,$top-secret-result-symbol
+              ',expect-id
+              |@{:macro-form ',(dyn :macro-form)
+                 :expected ',results
+                 :actual @[]})]
+          (array/push (,$expectation :actual) ,expression))))
 
 # this is a function, not a macro, but it returns forms representing
 # a test. it's meant to be called from within other macros.
@@ -53,24 +45,14 @@
       (errorf "could not read file contents %s" filename))
     (set (file-contents filename) source))
 
-  (def expect-results @{})
-  (def $expect-results (gensym))
-  # If we could just dynamically define macros, we wouldn't have
-  # to do this. Instead we use with-dyns to "pass arguments" to
-  # the (expect) macro.
-  (def expanded-forms
-    (with-dyns [:expect-results expect-results
-                :$expect-results $expect-results]
-      (macex forms)))
-  ~(do
-    (def ,$expect-results ,expect-results)
+  ~(let [,$top-secret-result-symbol @{}]
     (,register-test
       {:filename (dyn :current-file)
-       :pos (quote ,(tuple/sourcemap (dyn :macro-form)))
+       :pos ',(tuple/sourcemap (dyn :macro-form))
        :type-id ,test-type-form
        :name ,name
-       :body (fn ,args ,;expanded-forms)
-       :expect-results ,$expect-results
+       :body (fn ,args ,;forms)
+       :expect-results ,$top-secret-result-symbol
        })))
 
 (defmacro test [name & forms]
