@@ -6,6 +6,11 @@
 (test "math2"
   (expect (+ 2 2) 3))
 
+(test "math3"
+  (expect (+ 2 2) 4)
+  (expect (+ 2 2) 5)
+  (expect (+ 3 3) 5))
+
 (test "sorted-by"
   (expect (sorted-by 0 [[10 10] [1 1]]) [[1 1] [10 10]]))
 
