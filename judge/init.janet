@@ -39,7 +39,12 @@
 
 # this is a function, not a macro, but it returns forms representing
 # a test. it's meant to be called from within other macros.
-(defn- test-with-args [name args forms]
+(defn- test-with-args [name test-type args forms]
+  (unless (or (symbol? name) (string? name))
+    (errorf "test name must be a symbol or a string, got %j" name))
+  (def name (string name))
+  (def test-type-form (if (nil? test-type) nil ~',test-type))
+
   (def filename (dyn :current-file))
   (when (not (file-contents filename))
     (def source (with [source-file (file/open filename :rn)]
@@ -47,8 +52,6 @@
     (when (nil? source)
       (errorf "could not read file contents %s" filename))
     (set (file-contents filename) source))
-
-  (def name (string name))
 
   (def expect-results @{})
   (def $expect-results (gensym))
@@ -64,44 +67,40 @@
     (,register-test
       {:filename (dyn :current-file)
        :pos (quote ,(tuple/sourcemap (dyn :macro-form)))
-       :type-id (dyn :test-type)
+       :type-id ,test-type-form
        :name ,name
        :body (fn ,args ,;expanded-forms)
        :expect-results ,$expect-results
        })))
 
 (defmacro test [name & forms]
-  (validate-test-name name)
-  (test-with-args name [] forms))
+  (test-with-args name nil [] forms))
+
+(defn- bracketed-tuple? [x]
+  (and (tuple? x) (= (tuple/type x) :brackets)))
 
 (defmacro deftest [macro-name &keys {:setup setup :reset reset :teardown teardown}]
   (def test-type-id (gensym))
   (def location (tuple/sourcemap (dyn :macro-form)))
   (def filename (dyn :current-file))
   ~(upscope
-    (,register-test-type (quote ,test-type-id)
+    (,register-test-type ',test-type-id
       {:setup ,setup
        :reset ,reset
        :teardown ,teardown
-       :name (quote ,macro-name)
-       :location (quote ,location)
+       :name ',macro-name
+       :location ',location
        :filename ,filename
        })
     (defmacro ,macro-name [name & forms]
-      (def dynamic-bindings '[:test-type (quote ,test-type-id)])
-
-      (,validate-test-name name)
       (when (empty? forms)
         (error "cannot create a test with no body"))
-
-      (def first-form (in forms 0))
-      (def args-form
-        (if (and (tuple? first-form) (= (tuple/type first-form) :brackets))
-          first-form
-          '[$]))
-
-      ~(with-dyns ,dynamic-bindings
-        ,(,test-with-args name args-form forms)))))
+      (def [head & tail] forms)
+      (def [args-form body-forms]
+        (if (,bracketed-tuple? head)
+          [head tail]
+          ['[$] forms]))
+      (,test-with-args name ',test-type-id args-form body-forms))))
 
 (defn main [& args]
   (runner/run-tests all-tests test-types file-contents))
