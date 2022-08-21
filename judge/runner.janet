@@ -39,10 +39,25 @@
 
   results)
 
+(defn- has-source-map? [x]
+  (some |(not= $ -1) (tuple/sourcemap x)))
+
+(defn- tuple-of-type [elems type]
+  (case type
+    :brackets (tuple/brackets ;elems)
+    :parens (tuple ;elems)
+    (errorf "illegal tuple type %p" type)))
+
+(defn- tuple-preserve [original mapped]
+  (tuple-of-type mapped
+    (if (has-source-map? original)
+      (tuple/type original)
+      :brackets)))
+
 (defn- freeze-with-brackets [x]
   (case (type x)
     :array (tuple/brackets ;(map freeze-with-brackets x))
-    :tuple (tuple/brackets ;(map freeze-with-brackets x))
+    :tuple (tuple-preserve x (map freeze-with-brackets x))
     :table (if-let [p (table/getproto x)]
              (freeze-with-brackets (merge (table/clone p) x))
              (struct ;(map freeze-with-brackets (kvs x))))
