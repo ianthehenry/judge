@@ -119,20 +119,20 @@
     (os/rename corrected-filename original-filename)
     (eprint
       (colorize/fgf :yellow "source file %s has changed; refusing to overwrite with .corrected file"
-                    original-filename))))
+        original-filename))))
 
 (defn run-tests [all-tests test-types file-contents]
   (def args
     (argparse "Runs matching tests. If no tests are added explicitly, all tests are added."
-              "name" {:kind :accumulate :help "add a test by name (prefix match)"}
-              "name-exact" {:kind :accumulate :help "add a test by name (exact match)"}
-              "at" {:kind :accumulate :help "add a test by file:line:col"}
-              "not-name" {:kind :accumulate :help "remove a test by name (prefix match)"}
-              "not-name-exact" {:kind :accumulate :help "remove a test by name (exact match)"}
-              "not-at" {:kind :accumulate :help "remove a test by file:line:col"}
-              # "interactive"    {:kind :flag :short "i" :help "prompt for replacements"}
-              "accept" {:kind :flag :short "a" :help "overwrite files with .corrected files"}
-              :default {:kind :accumulate :help "list of targets"}))
+      "name"           {:kind :accumulate :help "add a test by name (prefix match)"}
+      "name-exact"     {:kind :accumulate :help "add a test by name (exact match)"}
+      "at"             {:kind :accumulate :help "add a test by file:line:col"}
+      "not-name"       {:kind :accumulate :help "remove a test by name (prefix match)"}
+      "not-name-exact" {:kind :accumulate :help "remove a test by name (exact match)"}
+      "not-at"         {:kind :accumulate :help "remove a test by file:line:col"}
+      # "interactive"    {:kind :flag :short "i" :help "prompt for replacements"}
+      "accept"         {:kind :flag :short "a" :help "overwrite files with .corrected files"}
+      :default         {:kind :accumulate :help "list of targets"}))
 
   (defn get-arg [name default]
     (or (in args name) default))
@@ -140,15 +140,13 @@
   (def accept-corrected-files (get-arg "accept" false))
 
   (def includes
-    (array/concat
-      @[]
+    (array/concat @[]
       (map |(parse-positional-selector $) (get-arg :default []))
       (map |[:name-prefix $] (get-arg "name" []))
       (map |[:name-exact $] (get-arg "name-exact" []))
       (map |[:location (parse-target $)] (get-arg "at" []))))
   (def excludes
-    (array/concat
-      @[]
+    (array/concat @[]
       (map |[:name-prefix $] (get-arg "not-name" []))
       (map |[:name-exact $] (get-arg "not-name-exact" []))
       (map |[:location (parse-target $)] (get-arg "not-at" []))))
@@ -167,9 +165,9 @@
     (eprint
       (colorize/fgf :red "%s for \"%j\"" msg (test-type :name))
       (colorize/dimf " (%s:%i:%i)"
-                     (test-type :filename)
-                     ((test-type :location) 0)
-                     ((test-type :location) 1))))
+        (test-type :filename)
+        ((test-type :location) 0)
+        ((test-type :location) 1))))
 
   (each {:first-test-of-type? first-test-of-type?
          :last-test-of-type? last-test-of-type?
@@ -179,17 +177,17 @@
          :name name
          :body body
          :expect-results expect-results}
-    (categorize-tests tests-to-run test-types)
+        (categorize-tests tests-to-run test-types)
 
     (when (and first-test-of-type? (type-fns :setup))
       # for some reason lifting the set out of the try causes the stacktrace
       # to omit the runner file, which is nice
       (set (test-contexts type-id)
-           (try ((type-fns :setup))
-             ([e fib]
-               (print-context-error "error initializing context" type-fns)
-               (debug/stacktrace fib e)
-               nil))))
+        (try ((type-fns :setup))
+          ([e fib]
+            (print-context-error "error initializing context" type-fns)
+            (debug/stacktrace fib e)
+            nil))))
 
     (def setup-complete
       (or (nil? type-id)
@@ -236,7 +234,7 @@
     (each {:actual actual
            :expected expected
            :macro-form macro-form}
-      expect-results
+          expect-results
 
       (def actual (freeze-with-brackets actual))
 
@@ -255,8 +253,8 @@
           (eprint (colorize/fg :green "+ " (prettify replacement-form)))
 
           (array/push (replacements-by-file filename)
-                      [(tuple/sourcemap macro-form)
-                       (prettify replacement-form)]))))
+            [(tuple/sourcemap macro-form)
+             (prettify replacement-form)]))))
 
     (if (or test-errored any-expectation-failed)
       (++ tests-failed)
@@ -268,7 +266,7 @@
       (rm-p corrected-filename)
       (do
         (write-file corrected-filename
-                    (rewriter/rewrite-forms (file-contents filename) replacements))
+          (rewriter/rewrite-forms (file-contents filename) replacements))
         (when accept-corrected-files
           (safely-accept-corrections corrected-filename filename file-contents)))))
 

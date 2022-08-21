@@ -26,8 +26,8 @@
   (def source-lines (string/split "\n" source))
 
   (->> replacements
-       (map (fn [[form-pos replacement]]
-              (def form-start (pos-to-byte-index source-lines form-pos))
-              (def form-length (get-form-length source form-start))
-              [form-start form-length replacement]))
-       (string-splice source)))
+    (map (fn [[form-pos replacement]]
+      (def form-start (pos-to-byte-index source-lines form-pos))
+      (def form-length (get-form-length source form-start))
+      [form-start form-length replacement]))
+    (string-splice source)))
