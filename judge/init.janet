@@ -17,7 +17,7 @@
     value
     (set (table key) (get-default))))
 
-(defmacro expect [expression & results]
+(defn- expect-helper [expression results]
   (let [expect-id (gensym)
         $expectation (gensym)]
     ~(let [,$expectation
@@ -28,6 +28,12 @@
                  :expected ',results
                  :actual @[]})]
           (array/push (,$expectation :actual) ,expression))))
+
+(defmacro expect [expression & results]
+  (expect-helper expression results))
+
+(defmacro expect-error [expression & results]
+  (expect-helper ~(try (do ,expression 'DID-NOT-ERROR) ([e] e)) results))
 
 # this is a function, not a macro, but it returns forms representing
 # a test. it's meant to be called from within other macros.

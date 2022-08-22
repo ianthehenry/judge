@@ -44,3 +44,8 @@
     "hi")
   (def x 10)
   (expect ~(identity ,x) [identity 10]))
+
+(test "errors"
+  (expect-error (error "raised"))
+  (expect-error "fine")
+  )
