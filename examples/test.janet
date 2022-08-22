@@ -32,3 +32,15 @@
 
 (printy-test my-test
   (print "actually running"))
+
+(test "canonical form"
+  (expect '(+ 2 2) (+ 2 2))
+  (expect [1 2 3])
+  (expect [1 2 3] [1 2 3])
+  (expect 10)
+  (expect 10 10)
+  (expect 10 10 20)
+  (expect 10
+    "hi")
+  (def x 10)
+  (expect ~(identity ,x) [identity 10]))

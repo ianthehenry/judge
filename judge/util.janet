@@ -2,6 +2,16 @@
 (defn- normalize-pos [[line col]]
   [(- line 1) (- col 1)])
 
+(defn- delimited? [x]
+  (case (type x)
+    :array true
+    :tuple true
+    :table true
+    :struct true
+    :string true
+    :buffer true
+    false))
+
 (defn pos-to-byte-index [lines pos]
   (var bytes 0)
   (def [target-line target-col] (normalize-pos pos))
@@ -22,4 +32,14 @@
       (error "reached end-of-string before finding the end of the form"))
     (parser/byte p (in source (+ start-index form-length)))
     (++ form-length))
-  form-length)
+
+  # we found a value, which means that either
+  # we parsed a closing delimiter, or a character
+  # that cannot be part of an atom. So we will have
+  # advanced something like this:
+  # "(hello)"
+  # "hello "
+  # "hello)"
+  (if (delimited? (parser/produce p))
+    form-length
+    (- form-length 1)))

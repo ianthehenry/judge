@@ -3,6 +3,7 @@
 (import ./util)
 
 (defn- prettify [value] (string/format "%j" value))
+(defn- prettify-many [values] (string/join (map prettify values) " "))
 
 (defn- rm-p [filename]
   (when (os/stat filename)
@@ -261,15 +262,18 @@
         (when (deep-not= actual expected)
           (set any-expectation-failed true)
 
-          (def replacement-form
+          (def theoretical-replacement-form
             (tuple ;(array/concat @[] (tuple/slice macro-form 0 2) actual)))
 
+          # TODO: our output would be much better output if we printed the actual
+          # text in the file instead of the prettified forms. things like (expect '(1 2 3))
+          # show up here as (expect (quote (1 2 3))), for example.
           (eprint (colorize/fg :red "- " (prettify macro-form)))
-          (eprint (colorize/fg :green "+ " (prettify replacement-form)))
+          (eprint (colorize/fg :green "+ " (prettify theoretical-replacement-form)))
 
           (array/push (replacements-by-file filename)
             [(tuple/sourcemap macro-form)
-             (prettify replacement-form)]))))
+             (prettify-many actual)]))))
 
     (if (or test-errored any-expectation-failed)
       (++ tests-failed)
