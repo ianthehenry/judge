@@ -1,0 +1,36 @@
+set -uo pipefail
+SOURCE=script.janet
+root=$(dirname $TESTDIR)
+
+relative_path_to=$(
+  janet -E '(print (string
+    (string/join (->>
+      (string/split "/" $0)
+      (drop 1)
+      (map (fn [_] "..")))
+      "/")
+     $1))' \
+     "$(pwd)" "$root"
+)
+
+use() {
+ # there must be a better way to do this
+ (echo "(use $relative_path_to/judge)"; cat) > "$SOURCE"
+}
+
+run() {
+  if [[ ! -e "$SOURCE" ]]; then
+    echo "must call use before run"
+    exit 1
+  fi
+  # cram doesn't differentiate stderr and stdout, but
+  # it's important to test
+  janet -m "$root/jpm_tree/lib" "$SOURCE" "$@" 3>&1 1>&2 2>&3 3>&- \
+    | sed -e 's/^/! /' \
+    | sed -E -e "s|$root|\$root|g" #\
+    #| sed -E -e 's/on line [0-9]+, column [0-9]+/on line LINE, column COL/g'
+}
+
+run_err() {
+  run "$@" | head -n1
+}
