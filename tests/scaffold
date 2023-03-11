@@ -1,5 +1,5 @@
 set -uo pipefail
-SOURCE=script.janet
+DEFAULT_FILE=script.janet
 root=$(dirname $TESTDIR)
 
 relative_path_to=$(
@@ -14,23 +14,50 @@ relative_path_to=$(
 )
 
 use() {
+ local file
  # there must be a better way to do this
- (echo "(use $relative_path_to/judge)"; cat) > "$SOURCE"
+ file=${1:-$DEFAULT_FILE}
+ (echo "(use $relative_path_to/judge)"; cat) > "$file"
 }
 
 run() {
-  if [[ ! -e "$SOURCE" ]]; then
+  local file
+  if [[ $# > 0 ]]; then
+    file=$1
+    shift
+  else
+    file=$DEFAULT_FILE
+  fi
+
+  if [[ ! -e "$file" ]]; then
     echo "must call use before run"
     exit 1
   fi
   # cram doesn't differentiate stderr and stdout, but
   # it's important to test
-  janet -m "$root/jpm_tree/lib" "$SOURCE" "$@" 3>&1 1>&2 2>&3 3>&- \
+  janet -m "$root/jpm_tree/lib" "$file" "$@" 3>&1 1>&2 2>&3 3>&- \
     | sed -e 's/^/! /' \
+    | sed -E -e 's/\x1b\[31m/<red>/' \
+    | sed -E -e 's/\x1b\[32m/<grn>/' \
+    | sed -E -e 's|\x1b\[0m|</>|' \
     | sed -E -e "s|$root|\$root|g" #\
     #| sed -E -e 's/on line [0-9]+, column [0-9]+/on line LINE, column COL/g'
 }
 
 run_err() {
   run "$@" | head -n1
+}
+
+show_file() {
+  if [[ -e "$1" ]]; then
+     grep -vF judge/judge < "$1"
+  else
+    echo "no corrected file"
+  fi
+}
+
+show_corrected() {
+  local file
+  file=${1:-$DEFAULT_FILE}
+  show_file "$file.corrected"
 }
