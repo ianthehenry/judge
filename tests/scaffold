@@ -37,9 +37,10 @@ run() {
   # it's important to test
   janet -m "$root/jpm_tree/lib" "$file" "$@" 3>&1 1>&2 2>&3 3>&- \
     | sed -e 's/^/! /' \
-    | sed -E -e 's/\x1b\[31m/<red>/' \
-    | sed -E -e 's/\x1b\[32m/<grn>/' \
-    | sed -E -e 's|\x1b\[0m|</>|' \
+    | sed -E -e 's/\x1b\[31m/<red>/g' \
+    | sed -E -e 's/\x1b\[32m/<grn>/g' \
+    | sed -E -e 's/\x1b\[2m/<dim>/g' \
+    | sed -E -e 's|\x1b\[0m|</>|g' \
     | sed -E -e "s|$root|\$root|g" #\
     #| sed -E -e 's/on line [0-9]+, column [0-9]+/on line LINE, column COL/g'
 }
