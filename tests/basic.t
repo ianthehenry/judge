@@ -88,10 +88,11 @@ Uncaught exceptions cause tests to fail:
   ! running test: test
   ! <red>test raised:</>
   ! error: oh no
-  !   in <anonymous> [script.janet] (tailcall) on line 3, column 3
+  !   in <anonymous> [script.janet] (tailcall) on line 2, column 3
   ! 0 passed 1 failed 0 excluded 0 skipped
   [1]
 
+TODO: the order of this output is not deterministic
 Reports multiple failed expectations:
 
   $ use <<EOF
@@ -101,10 +102,10 @@ Reports multiple failed expectations:
   > EOF
   $ run
   ! running test: test
-  ! <red>- (expect 1 2)</>
-  ! <grn>+ (expect 1 1)</>
   ! <red>- (expect 3 4)</>
   ! <grn>+ (expect 3 3)</>
+  ! <red>- (expect 1 2)</>
+  ! <grn>+ (expect 1 1)</>
   ! 0 passed 1 failed 0 excluded 0 skipped
   [1]
 

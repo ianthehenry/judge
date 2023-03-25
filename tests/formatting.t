@@ -10,12 +10,12 @@
 
   $ run
   ! running test: test
-  ! <red>- (expect (quote (+ 2 2)))</>
-  ! <grn>+ (expect (quote (+ 2 2)) (+ 2 2))</>
   ! <red>- (expect [1 2 3])</>
   ! <grn>+ (expect [1 2 3] [1 2 3])</>
   ! <red>- (expect (quasiquote (identity (unquote x))))</>
   ! <grn>+ (expect (quasiquote (identity (unquote x))) [identity 10])</>
+  ! <red>- (expect (quote (+ 2 2)))</>
+  ! <grn>+ (expect (quote (+ 2 2)) (+ 2 2))</>
   ! 0 passed 1 failed 0 excluded 0 skipped
   [1]
 

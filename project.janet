@@ -8,4 +8,11 @@
   :dependencies ["https://github.com/janet-lang/argparse"])
 
 (declare-source
-  :source ["judge"])
+  :prefix "judge"
+  :source [
+    "src/colorize.janet"
+    "src/init.janet"
+    "src/rewriter.janet"
+    "src/runner.janet"
+    "src/util.janet"
+  ])

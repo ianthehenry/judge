@@ -19,10 +19,10 @@ Exported symbols:
        --not-name-exact VALUE                  remove a test by name (exact match)
   
   ! error: expected string|symbol|keyword|array|tuple|table|struct|buffer, got nil
-  !   in get-arg [../../../..$root/judge/runner.janet] on line 154, column 9
-  !   in run-tests [../../../..$root/judge/runner.janet] (tailcall) on line 156, column 31
-  !   in run-main [boot.janet] on line 3783, column 16
-  !   in cli-main [boot.janet] on line 3928, column 17
+  !   in get-arg [jpm_tree/lib/judge/runner.janet] on line 154, column 9
+  !   in run-tests [jpm_tree/lib/judge/runner.janet] (tailcall) on line 156, column 31
+  !   in run-main [boot.janet] on line 3795, column 16
+  !   in cli-main [boot.janet] on line 3940, column 17
   [1]
 
   $ use test.janet <<EOF
@@ -50,22 +50,22 @@ Name exact does not match prefix:
   $ run test.janet --name-exact fir
   ! 0 passed 0 failed 2 excluded 0 skipped
 
-At (the first line is the use line, so the test actually starts on line two):
+At:
 
-  $ run test.janet --at test.janet:2:1
+  $ run test.janet --at test.janet:1:1
   ! running test: first
   ! 1 passed 0 failed 1 excluded 0 skipped
 
 At should work for any position in between start and end:
 
-  $ run test.janet --at test.janet:2:20
+  $ run test.janet --at test.janet:1:20
   ! running test: first
   ! 1 passed 0 failed 1 excluded 0 skipped
 
 TODO: this is a weird bug
 At should work for any position even if it exceeds the length of the file:
 
-  $ run test.janet --at test.janet:2:100
+  $ run test.janet --at test.janet:1:100
   ! 0 passed 0 failed 2 excluded 0 skipped
 
 You can exclude files:

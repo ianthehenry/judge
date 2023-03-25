@@ -2,6 +2,12 @@ set -uo pipefail
 DEFAULT_FILE=script.janet
 root=$(dirname $TESTDIR)
 
+if [[ ! -e jpm_tree/ ]]; then
+  rsync -a "$root/jpm_tree/" jpm_tree/
+  TREE=$(pwd)/jpm_tree
+  (cd "$root"; jpm --tree=$TREE install >/dev/null)
+fi
+
 relative_path_to=$(
   janet -E '(print (string
     (string/join (->>
@@ -17,7 +23,7 @@ use() {
  local file
  # there must be a better way to do this
  file=${1:-$DEFAULT_FILE}
- (echo "(use $relative_path_to/judge)"; cat) > "$file"
+ cat > "$file"
 }
 
 run() {
@@ -35,7 +41,7 @@ run() {
   fi
   # cram doesn't differentiate stderr and stdout, but
   # it's important to test
-  janet -m "$root/jpm_tree/lib" "$file" "$@" 3>&1 1>&2 2>&3 3>&- \
+  janet -m "jpm_tree/lib" -l judge "$file" "$@" 3>&1 1>&2 2>&3 3>&- \
     | sed -e 's/^/! /' \
     | sed -E -e 's/\x1b\[31m/<red>/g' \
     | sed -E -e 's/\x1b\[32m/<grn>/g' \
