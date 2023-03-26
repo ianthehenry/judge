@@ -43,3 +43,6 @@
   (if (delimited? (parser/produce p))
     form-length
     (- form-length 1)))
+
+(defn slice-len [target start len]
+  (slice target start (+ start len)))

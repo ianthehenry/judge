@@ -27,36 +27,43 @@
 (defn- whitespace? [x]
   (or (= x " ") (= x "\n")))
 
-(defn- skip-whitespace [str i]
-  (var i i)
-  (while (and (< i (length str)) (whitespace? (char-at str i)))
-    (++ i))
-  i)
+# returns an array of byte indices for the start of each
+# subform, in the coordinate space of the source input
+(defn components [source start-index form-length]
+  (def innards (slice-len source (+ start-index 1) (- form-length 2)))
+  (def innard-lines (string/split "\n" innards))
+  (def p (parser/new))
+  (parser/consume p innards)
+  (parser/eof p)
+  (def result @[])
+  (while (parser/has-more p)
+    (array/push result
+      (+ start-index 1
+        (pos-to-byte-index innard-lines
+          (tuple/sourcemap (parser/produce p true))))))
+  result)
 
 # replacements should be a list of [form-pos replacement-str]
 (defn rewrite-forms [source replacements]
   (def source-lines (string/split "\n" source))
 
-  (->> replacements
-    (map (fn [[enclosing-form-pos replacement]]
-      (def enclosing-form-start (pos-to-byte-index source-lines enclosing-form-pos))
-      (def enclosing-form-length (get-form-length source enclosing-form-start))
+  (string-splice source (seq [[pos replacement] :in replacements]
+    (def start (pos-to-byte-index source-lines pos))
+    (def len (get-form-length source start))
 
-      (def first-form-start (+ enclosing-form-start 1))
-      (def first-form-length (get-form-length source first-form-start))
+    (def components (components source start len))
+    (def third-form-end (+ start len -1))
+    (def third-form-start
+      (case (length components)
+        0 (error "cannot patch")
+        1 (errorf "cannot patch")
+        2 third-form-end
+        3 (in components 2)))
 
-      (def second-form-start (+ first-form-start first-form-length))
-      (def second-form-length (get-form-length source second-form-start))
+    (def third-form-len (- third-form-end third-form-start))
 
-      (def third-form-start (skip-whitespace source (+ second-form-start second-form-length)))
-
-      (def offset (- third-form-start enclosing-form-start))
-      (assert (and (> offset 0)
-                   (< offset enclosing-form-length)))
-
-      [third-form-start (- enclosing-form-length offset 1) replacement]))
-    (map (fn [[start len str]]
-      (if (whitespace? (char-at source (- start 1)))
-        [start len str]
-        [start len (string " " str)])))
-    (string-splice source)))
+    [third-form-start
+     third-form-len
+     (if (whitespace? (char-at source (- third-form-start 1)))
+      replacement
+      (string " " replacement))])))
