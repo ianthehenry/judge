@@ -128,7 +128,7 @@ Run test on a specific line/column (useful for editor tooling):
 
 Sometimes you might have a bunch of tests that all need some kind of shared context -- a SQL connection, maybe, or an OpenGL graphics context. You could create that context anew at the beginning of every test, but that might be very expensive. There are some cases where it might be appropriate to create the context a single time, and pass it in to every test of that type.
 
-To declare a new test type, use the `deftest-type` macro:
+To declare a new context-dependent test type, use the `deftest-type` macro:
 
 ```janet
 (deftest-type stateful
@@ -150,20 +150,77 @@ Just to recap: if the test-runner is running *N* custom tests, it will run setup
 
 It's important that reset *actually* resets the test state, so that it doesn't matter what order tests run in or what other tests ran before your test. There are few greater sins than writing tests that can't be run independently.
 
-## Shortcomings
-
-The macros themselves work pretty well, but the actual "test runner" bit is pretty basic and needs some work. For example:
-
-- test output isn't very pretty
-- there's no interactive mode to select particular corrections
-
-There's also no stdout redirect/output embedding, which is a pretty useful thing that I'll probably add as a first-class helper at some point.
-
-## Caveats
-
-There's a potential race with file contents that may cause errors patching files, because Judge will read and cache the file during compilation -- necessarily after Janet has already read the file. If the file has changed in between the time that Janet began compiling the test and the time that Judge reads the source file, you will probably get patch errors. This... is very unlikely, but it's worth mentioning.
-
 # TODO
 
 - [ ] judge should not recurse into hidden directories
 - [ ] judge should distinguish between explicitly specified files and discovered files -- shouldn't error if you discover a readonly file
+- [ ] should i preserve the old main-based workflow? I can't decide.
+
+# Changelog
+
+## v2.0.0 2023-??-??
+
+v2 is a complete rewrite of Judge with an incompatible API.
+
+The biggest difference is that Judge now ships with a test runner script instead of defining a `main` function. This makes it possible to write tests inside regular source files, instead of only in a `test/` subdirectory. But it also means that `jpm test` no longer works transparently out of the box.
+
+TODO: write something about how to get `jpm test`.
+
+- `(expect)` is now called `(test)`. `(test)` is now called `(deftest)`. `(deftest)` is now called `(deftest-type)`, and works differently.
+
+    ```janet
+    # v1
+    (test "basic math"
+      (expect (+ 1 1) 2))
+    
+    # v2
+    (deftest "basic math"
+      (test (+ 1 1) 2))
+    ```
+
+- You no longer need to use `deftest` to declare a test. You can put `(test)` expressions directly at the top level of your source files.
+
+    ```janet
+    (use judge)
+
+    (test (+ 1 1) 2)
+
+    (deftest "you can still name tests to group them"
+      (test (+ 1 2) 3)
+      (test (- 1 2) -1))
+    ```
+
+- Custom context-sensitive tests no longer generate a macro. Instead, custom tests are run with the `deftest:` macro.
+
+    ```janet
+    # v1
+    (deftest custom-test
+      :setup (fn [] (get-some-resource)))
+
+    (custom-test "some stateful test" [context]
+      (test (:something context) 0))
+
+    # v2
+    (deftest-type custom-test
+      :setup (fn [] (get-some-resource)))
+
+    (deftest: custom-test "some stateful test" [context]
+      (test (:something context) 0))
+    ```
+
+- The test runner now prints the actual text of failing expectations, not a serialization of the parsed syntax tree. This means it preserves line-breaks and other formatting.
+
+- TODO: `test-stdout` and `test-stderr`.
+
+## v1.0.0 2022-08-22
+
+- Added `expect-error`.
+
+## v0.2.0 2022-08-21
+
+- Judge no longer rewrites the entire `(expect)` form, only the bit that has changed. This fixes the bug where `(expect 'foo foo)` would become `(expect (quote foo) foo)`.
+- Judge now renders quoted forms with round brackets instead of square brackets. So `(expect ~(1 2))` will become `(expect ~(1 2) (1 2))` instead of `(expect ~(1 2) [1 2])`.
+
+## v0.1.0 2021-09-29
+
+Initial release of Judge. Motivation and design described in some detail [in this blog post](https://ianthehenry.com/posts/janet-game/judging-janet/).
