@@ -1,6 +1,6 @@
   $ source $TESTDIR/scaffold
 
-Exported symbols:
+Usage:
 
   $ use test.janet <<<''
   $ run test.janet --help

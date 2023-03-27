@@ -11,9 +11,34 @@ Exported symbols:
   >   (pp sym))
   > EOF
   $ run
-  expect
+  deftest-type
+  deftest:
   deftest
-  expect-error
   test
-  main
-  ! 0 passed 0 failed 0 excluded 0 skipped
+  test-macro
+  test-error
+
+Installed files:
+
+  $ tree jpm_tree
+  jpm_tree
+  |-- bin
+  |   `-- judge
+  |-- lib
+  |   |-- cmd
+  |   |   |-- arg-parser.janet
+  |   |   |-- bridge.janet
+  |   |   |-- help.janet
+  |   |   |-- init.janet
+  |   |   |-- param-parser.janet
+  |   |   `-- util.janet
+  |   `-- judge
+  |       |-- colorize.janet
+  |       |-- init.janet
+  |       |-- rewriter.janet
+  |       |-- runner.janet
+  |       |-- shared.janet
+  |       `-- util.janet
+  `-- man
+  
+  5 directories, 13 files

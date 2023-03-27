@@ -5,14 +5,21 @@
   :license "MIT"
   :url "https://github.com/ianthehenry/judge"
   :repo "git+https://github.com/ianthehenry/judge"
-  :dependencies ["https://github.com/janet-lang/argparse"])
+  :dependencies [
+    {:url "https://github.com/ianthehenry/cmd"
+     :tag "v1.0.1"}
+  ])
 
 (declare-source
   :prefix "judge"
   :source [
+    "src/shared.janet"
     "src/colorize.janet"
     "src/init.janet"
     "src/rewriter.janet"
     "src/runner.janet"
     "src/util.janet"
   ])
+
+(declare-binscript :main "src/judge"
+  :hardcode-syspath true)
