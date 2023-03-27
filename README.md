@@ -150,17 +150,11 @@ Just to recap: if the test-runner is running *N* custom tests, it will run setup
 
 It's important that reset *actually* resets the test state, so that it doesn't matter what order tests run in or what other tests ran before your test. There are few greater sins than writing tests that can't be run independently.
 
-# TODO
-
-- [ ] judge should not recurse into hidden directories
-- [ ] judge should distinguish between explicitly specified files and discovered files -- shouldn't error if you discover a readonly file
-- [ ] should i preserve the old main-based workflow? I can't decide.
-
 # Changelog
 
 ## v2.0.0 2023-??-??
 
-v2 is a complete rewrite of Judge with an incompatible API.
+Judge v2 is a complete rewrite with an incompatible API.
 
 The biggest difference is that Judge now ships with a test runner script instead of defining a `main` function. This makes it possible to write tests inside regular source files, instead of only in a `test/` subdirectory. But it also means that `jpm test` no longer works transparently out of the box.
 

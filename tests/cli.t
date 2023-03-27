@@ -93,3 +93,45 @@ Accepting tests overwrites the file:
   (use judge)
   (deftest "test"
     (test 1 1))
+
+Does not traverse hidden files or folders:
+
+  $ rm *.janet
+  $ mkdir .hidden
+
+  $ cat >.hidden/hello.janet <<EOF
+  > (use judge)
+  > (print "hello")
+  > (test 1 1)
+  > EOF
+
+  $ cat >.foo.janet <<EOF
+  > (use judge)
+  > (print "hidden file")
+  > (test 1 1)
+  > EOF
+
+  $ judge
+  ! 0 passed 0 failed 0 skipped 0 unreachable
+  [1]
+
+  $ judge test.janet
+  ! error: could not read "test.janet"
+  [1]
+
+Will run hidden files or folders by explicit request:
+
+  $ judge .foo.janet
+  hidden file
+  ! running test: $PWD/.foo.janet:3:1
+  ! 1 passed 0 failed 0 skipped 0 unreachable
+
+  $ judge .hidden
+  hello
+  ! running test: $PWD/.hidden/hello.janet:3:1
+  ! 1 passed 0 failed 0 skipped 0 unreachable
+
+  $ judge .hidden/hello.janet
+  hello
+  ! running test: $PWD/.hidden/hello.janet:3:1
+  ! 1 passed 0 failed 0 skipped 0 unreachable

@@ -14,25 +14,31 @@
   [(but-last (string/split "/" path))
    (basename path)])
 
-(defn extless [path]
+(defn chop-ext [path]
   (def [dir base] (split-path path))
-  (def [extless] (string/split "." base))
-  (string/join [;dir extless] "/"))
+  (def components (string/split "." base))
+  (def leading (tuple/slice components 0 (- (length components) 1)))
+  (string/join [;dir (string/join leading ".")] "/"))
 
 (defn to-abs [path]
   (if (string/has-prefix? "/" path)
     path
     (string (os/cwd) "/" path)))
 
-(defn find-all-janet-files [path &opt results]
+(defn- hidden? [path]
+  (string/has-prefix? "." (basename path)))
+
+(defn find-all-janet-files [path &opt explicit results]
+  (default explicit true)
   (default results @[])
-  (case (os/stat path :mode)
-    :directory
-      (when (not= (basename path) "jpm_tree")
-        (each entry (os/dir path)
-          (find-all-janet-files (string path "/" entry) results)))
-    :file (if (string/has-suffix? ".janet" path) (array/push results path))
-    nil (array/push results [(string/format "could not read %q" path)]))
+  (when (or explicit (not (hidden? path)))
+    (case (os/stat path :mode)
+      :directory
+        (when (or explicit (not= (basename path) "jpm_tree"))
+          (each entry (os/dir path)
+            (find-all-janet-files (string path "/" entry) false results)))
+      :file (if (string/has-suffix? ".janet" path) (array/push results path))
+      nil (array/push results [(string/format "could not read %q" path)])))
 results)
 
 (defn- serialize [x]
@@ -233,7 +239,7 @@ results)
   (put root-env *global-test-context* ctx)
 
   (each file found-files
-    (require (string "@" (extless file))))
+    (require (string "@" (chop-ext file))))
 
   (var teardown-failure false)
   (eachp [{:teardown teardown :name name} state] (ctx :states)
