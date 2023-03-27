@@ -48,6 +48,7 @@ Name exact does not match prefix:
 
   $ judge test.janet --name-exact fir
   ! 0 passed 0 failed 2 skipped 0 unreachable
+  [1]
 
 At:
 
@@ -66,6 +67,7 @@ At should work for any column position even if it exceeds the length of the file
 
   $ judge test.janet:1:1000
   ! 0 passed 0 failed 2 skipped 0 unreachable
+  [1]
 
 You can exclude tests:
 

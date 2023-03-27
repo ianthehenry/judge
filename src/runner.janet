@@ -255,5 +255,7 @@ results)
   (eprintf "%i passed %i failed %i skipped %i unreachable"
     (ctx :passed) (ctx :failed) (ctx :skipped) unreachable)
 
-  (if (or (> (+ unreachable (ctx :failed)) 0) teardown-failure)
+  (if (or (> (+ unreachable (ctx :failed)) 0)
+          teardown-failure
+          (= (ctx :passed) 0))
     (os/exit 1)))

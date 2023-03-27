@@ -24,6 +24,7 @@ By default, Judge recursively finds all Janet files:
   test one
   test two
   ! 0 passed 0 failed 0 skipped 0 unreachable
+  [1]
 
 Judge errors if you pass it a file that does not exist:
 
@@ -42,6 +43,7 @@ Single files work:
   $ judge main.janet
   hello
   ! 0 passed 0 failed 0 skipped 0 unreachable
+  [1]
 
 Directories work:
 
@@ -49,6 +51,7 @@ Directories work:
   test one
   test two
   ! 0 passed 0 failed 0 skipped 0 unreachable
+  [1]
 
 And combinations of the two:
 
@@ -57,6 +60,7 @@ And combinations of the two:
   test two
   hello
   ! 0 passed 0 failed 0 skipped 0 unreachable
+  [1]
 
 Simplest possible test:
 
