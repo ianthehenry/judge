@@ -1,27 +1,29 @@
   $ source $TESTDIR/scaffold
 
   $ use <<EOF
-  > (test "test"
-  >   (expect '(+ 2 2))
-  >   (expect [1 2 3])
+  > (use judge)
+  > (deftest "test"
+  >   (test '(+ 2 2))
+  >   (test [1 2 3])
   >   (def x 10)
-  >   (expect ~(identity ,x)))
+  >   (test ~(identity ,x)))
   > EOF
 
-  $ run
+  $ judge
   ! running test: test
-  ! <red>- (expect [1 2 3])</>
-  ! <grn>+ (expect [1 2 3] [1 2 3])</>
-  ! <red>- (expect (quasiquote (identity (unquote x))))</>
-  ! <grn>+ (expect (quasiquote (identity (unquote x))) [identity 10])</>
-  ! <red>- (expect (quote (+ 2 2)))</>
-  ! <grn>+ (expect (quote (+ 2 2)) (+ 2 2))</>
-  ! 0 passed 1 failed 0 excluded 0 skipped
+  ! <red>- (test '(+ 2 2))</>
+  ! <grn>+ (test '(+ 2 2) (+ 2 2))</>
+  ! <red>- (test [1 2 3])</>
+  ! <grn>+ (test [1 2 3] [1 2 3])</>
+  ! <red>- (test ~(identity ,x))</>
+  ! <grn>+ (test ~(identity ,x) [identity 10])</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
-  $ show_corrected
-  (test "test"
-    (expect '(+ 2 2) (+ 2 2))
-    (expect [1 2 3] [1 2 3])
+  $ show_tested
+  (use judge)
+  (deftest "test"
+    (test '(+ 2 2) (+ 2 2))
+    (test [1 2 3] [1 2 3])
     (def x 10)
-    (expect ~(identity ,x) [identity 10]))
+    (test ~(identity ,x) [identity 10]))

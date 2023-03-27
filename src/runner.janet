@@ -170,9 +170,15 @@ results)
     (require (string "@" (to-abs (extless file)))))
 
   # TODO: we should catch this if it errors and fail the test suite
-  (eachp [{:teardown teardown} state] (ctx :states)
+  (var teardown-failure false)
+  (eachp [{:teardown teardown :name name} state] (ctx :states)
     (match state
-      [:ok state] (teardown state)))
+      [:ok state]
+        (try (teardown state)
+          ([e fib]
+            (set teardown-failure true)
+            (eprint (colorize/fgf :red "failed to teardown %s test context" name))
+            (debug/stacktrace fib e "")))))
 
   (var unreachable 0)
   (loop [test :in (ctx :tests) :when (not (test :ran))]
@@ -183,6 +189,6 @@ results)
 
   (eprintf "%i passed %i failed %i skipped %i unreachable"
     (ctx :passed) (ctx :failed) (ctx :skipped) unreachable)
-  (if (> (+ unreachable (ctx :failed)) 0)
-    (os/exit 1))
-  )
+
+  (if (or (> (+ unreachable (ctx :failed)) 0) teardown-failure)
+    (os/exit 1)))

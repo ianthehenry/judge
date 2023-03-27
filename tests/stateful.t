@@ -3,78 +3,112 @@
 Shared state is reset between runs:
 
   $ use <<EOF
-  > (deftest stateful-test
+  > (use judge)
+  > (deftest-type stateful-test
   >   :setup (fn [] @{:n 0})
-  >   :reset (fn [context] 
+  >   :reset (fn [context]
   >     (set (context :n) 0)))
   > 
-  > (stateful-test "initial state" [state]
-  >   (expect (state :n) 0))
-  > (stateful-test "state can be mutated" [state]
+  > (deftest: stateful-test "initial state" [state]
+  >   (test (state :n) 0))
+  > (deftest: stateful-test "state can be mutated" [state]
   >   (set (state :n) 1)
-  >   (expect (state :n) 1))
+  >   (test (state :n) 1))
   > 
-  > (stateful-test "state is back to normal" [state]
-  >   (expect (state :n) 0))
+  > (deftest: stateful-test "state is back to normal" [state]
+  >   (test (state :n) 0))
   > EOF
 
-  $ run 
+  $ judge
   ! running test: initial state
   ! running test: state can be mutated
   ! running test: state is back to normal
-  ! 3 passed 0 failed 0 excluded 0 skipped
+  ! 3 passed 0 failed 0 skipped 0 unreachable
 
 Tests don't run if something fails:
 
   $ use <<EOF
-  > (deftest erroneous-setup
+  > (use judge)
+  > (deftest-type erroneous-setup
   >   :setup (fn [] (error "oh no")))
   > 
-  > (erroneous-setup "test that will be skipped"
+  > (deftest: erroneous-setup "test that will be skipped" [_]
   >   (error "unreachable"))
   > 
-  > (erroneous-setup "another test that will be skipped"
+  > (deftest: erroneous-setup "another test that will be skipped" [_]
   >   (error "unreachable"))
   > EOF
 
-  $ run
-  ! <red>error initializing context for "erroneous-setup"</><dim> (script.janet:1:1)</>
-  ! error: oh no
-  !   in <anonymous> [script.janet] (tailcall) on line 2, column 17
-  ! <red>unable to run test: test that will be skipped</>
-  ! <red>unable to run test: another test that will be skipped</>
-  ! 2 passed 0 failed 0 excluded 2 skipped
+  $ judge
+  ! running test: test that will be skipped
+  ! <red>test raised:</>
+  ! error: failed to initialize context: oh no
+  !   in <anonymous> [./script.janet] on line 3, column 17
+  !   in <anonymous> [./jpm_tree/lib/judge/init.janet] on line 33, column 17
+  !   in <anonymous> [./script.janet] on line 5, column 1
+  ! running test: another test that will be skipped
+  ! <red>test raised:</>
+  ! error: failed to initialize context: oh no
+  !   in <anonymous> [./script.janet] on line 3, column 17
+  !   in <anonymous> [./jpm_tree/lib/judge/init.janet] on line 33, column 17
+  !   in <anonymous> [./script.janet] on line 8, column 1
+  ! 0 passed 2 failed 0 skipped 0 unreachable
   [1]
 
 Something else:
 
   $ use <<EOF
-  > (deftest erroneous-reset
+  > (use judge)
+  > (deftest-type erroneous-reset
   >   :setup (fn [] @{:n 0})
   >   :reset (fn [context]
   >     (print "reset")
   >     (error "oh dear")))
   > 
-  > (erroneous-reset "test not called because reset failed"
+  > (deftest: erroneous-reset "test not called because reset failed" [_]
   >   (error "unreachable"))
   > 
-  > (erroneous-reset "test not attempted"
+  > (deftest: erroneous-reset "test not attempted" [_]
   >   (error "unreachable"))
   > EOF
 
-TODO: reset should only be called once; the entire class of test should be marked
-as broken after a single reset failure.
+No tests of this type can run after a reset failure:
 
-  $ run
+  $ judge
   reset
-  reset
-  ! <red>error resetting context for "erroneous-reset"</><dim> (script.janet:1:1)</>
-  ! error: oh dear
-  !   in <anonymous> [script.janet] (tailcall) on line 5, column 5
-  ! <red>unable to run test: test not called because reset failed</>
-  ! <red>error resetting context for "erroneous-reset"</><dim> (script.janet:1:1)</>
-  ! error: oh dear
-  !   in <anonymous> [script.janet] (tailcall) on line 5, column 5
-  ! <red>unable to run test: test not attempted</>
-  ! 2 passed 0 failed 0 excluded 2 skipped
+  ! running test: test not called because reset failed
+  ! <red>test raised:</>
+  ! error: failed to initialize context: oh dear
+  !   in <anonymous> [./script.janet] on line 6, column 5
+  !   in <anonymous> [./jpm_tree/lib/judge/init.janet] on line 38, column 18
+  !   in <anonymous> [./script.janet] on line 8, column 1
+  ! running test: test not attempted
+  ! <red>test raised:</>
+  ! error: failed to initialize context: oh dear
+  !   in <anonymous> [./script.janet] on line 6, column 5
+  !   in <anonymous> [./jpm_tree/lib/judge/init.janet] on line 38, column 18
+  !   in <anonymous> [./script.janet] on line 11, column 1
+  ! 0 passed 2 failed 0 skipped 0 unreachable
+  [1]
+
+Teardown failures are reported:
+
+  $ use <<EOF
+  > (use judge)
+  > (deftest-type erroneous-teardown
+  >   :setup (fn [] @{:n 0})
+  >   :reset (fn [context]
+  >     (put context :n 0))
+  >   :teardown (fn [_] (error "oh no")))
+  > 
+  > (deftest: erroneous-teardown "test" [_]
+  >   nil)
+  > EOF
+
+  $ judge
+  ! running test: test
+  ! <red>failed to teardown erroneous-teardown test context</>
+  ! error: oh no
+  !   in <anonymous> [./script.janet] (tailcall) on line 6, column 21
+  ! 1 passed 0 failed 0 skipped 0 unreachable
   [1]

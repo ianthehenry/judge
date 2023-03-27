@@ -24,7 +24,7 @@ Preserves formatting before result:
   $ use <<EOF
   > (use judge)
   > (deftest "test"
-  >   (test (+ 1 
+  >   (test (+ 1
   >      2)))
   > EOF
   $ judge >/dev/null
@@ -33,7 +33,7 @@ Preserves formatting before result:
   $ show_tested
   (use judge)
   (deftest "test"
-    (test (+ 1 
+    (test (+ 1
        2) 3))
 
 Preserves position of result:
@@ -41,7 +41,7 @@ Preserves position of result:
   $ use <<EOF
   > (use judge)
   > (deftest "test"
-  >   (test [1 
+  >   (test [1
   >         2]
   >       [1 3]))
   > EOF
@@ -51,7 +51,7 @@ Preserves position of result:
   $ show_tested
   (use judge)
   (deftest "test"
-    (test [1 
+    (test [1
           2]
         [1 2]))
 
@@ -60,9 +60,9 @@ Does not preserve formatting of incorrect result:
   $ use <<EOF
   > (use judge)
   > (deftest "test"
-  >   (test [1 
+  >   (test [1
   >         2]
-  >       [1 
+  >       [1
   >            3]))
   > EOF
   $ judge >/dev/null
@@ -71,7 +71,7 @@ Does not preserve formatting of incorrect result:
   $ show_tested
   (use judge)
   (deftest "test"
-    (test [1 
+    (test [1
           2]
         [1 2]))
 
@@ -80,9 +80,9 @@ Does not re-format correct results:
   $ use <<EOF
   > (use judge)
   > (deftest "test"
-  >   (test [1 
+  >   (test [1
   >         2]
-  >       [1 
+  >       [1
   >            2]))
   > EOF
   $ judge >/dev/null

@@ -3,20 +3,20 @@
 Exported symbols:
 
   $ use <<EOF
-  > (loop [[sym entry]
+  > (each sym (sort (seq [[sym entry]
   >        :pairs (require "judge")
   >        :when (table? entry)
   >        :let [{:private private} entry]
-  >        :when (and (symbol? sym) (not private))]
+  >        :when (and (symbol? sym) (not private))] sym))
   >   (pp sym))
   > EOF
   $ run
+  deftest
   deftest-type
   deftest:
-  deftest
   test
-  test-macro
   test-error
+  test-macro
 
 Installed files:
 

@@ -286,3 +286,17 @@ test-macro:
   $ cat script.janet.tested
   (use judge)
   (test-macro (let [x 1] x) [do [def x 1] x])
+
+Tests run as soon as they're encountered:
+
+  $ use <<EOF
+  > (use judge)
+  > (var x 0)
+  > (test x 0)
+  > (++ x)
+  > (test x 1)
+  > EOF
+  $ judge script.janet
+  ! running test: ./script.janet:3:1
+  ! running test: ./script.janet:5:1
+  ! 2 passed 0 failed 0 skipped 0 unreachable

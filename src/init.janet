@@ -73,15 +73,16 @@
 (defmacro deftest: [<type> <name> <args> & body]
   (declare-test <name> <type> <args> body))
 
-# TODO: should be a no-op if not testing
 (defmacro deftest-type [name &named setup reset teardown]
-  (default setup ~(fn []))
-  (default reset ~(fn [_]))
-  (default teardown ~(fn [_]))
-  ~(def ,name
-    @{:setup ,setup
-      :reset ,reset
-      :teardown ,teardown}))
+  (when (dyn *global-test-context*)
+    (default setup ~(fn []))
+    (default reset ~(fn [_]))
+    (default teardown ~(fn [_]))
+    ~(def ,name
+      @{:name ',name
+        :setup ,setup
+        :reset ,reset
+        :teardown ,teardown})))
 
 (defn- actual-expectation [test expr expected]
   (def expectation
