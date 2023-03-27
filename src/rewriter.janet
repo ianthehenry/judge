@@ -92,16 +92,13 @@
           (tuple/sourcemap (parser/produce p true))))))
   result)
 
-(defn get-form [source pos]
-  (def lines (string/split "\n" source))
+(defn get-form [{:source source :lines lines} pos]
   (def start (pos-to-byte-index lines pos))
   (def len (get-form-length source start))
   (util/slice-len source start len))
 
 # replacements should be a list of [form-pos replacement-str]
-(defn rewrite-forms [source replacements]
-  (def lines (string/split "\n" source))
-
+(defn rewrite-forms [{:source source :lines lines} replacements]
   (string-splice source (seq [[pos replacement] :in replacements]
     (def start (pos-to-byte-index lines pos))
     (def len (get-form-length source start))
@@ -124,4 +121,12 @@
       (string " " replacement))])))
 
 (defn rewrite-form [source pos replacement]
-  (rewrite-forms source [[pos replacement]]))
+  (rewrite-forms {:source source :lines (string/split "\n" source)} [[pos replacement]]))
+
+(defn pos-in-form? [{:source source :lines lines} form-pos target-pos]
+  (def form-start-index (pos-to-byte-index lines form-pos))
+  (def form-length (get-form-length source form-start-index))
+  (def target-start-index (pos-to-byte-index lines target-pos))
+
+  (and (>= target-start-index form-start-index)
+       (< target-start-index (+ form-start-index form-length))))

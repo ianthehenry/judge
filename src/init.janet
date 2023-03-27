@@ -7,7 +7,7 @@
 (defn- ignore [&] nil)
 
 (defn- make-test [ctx <name>]
-  (def location (tuple/sourcemap (dyn :macro-form)))
+  (def pos (tuple/sourcemap (dyn :macro-form)))
   (def file (dyn :current-file))
   # we create this now because the presence of an empty
   # list is significant -- it will cause us to delete the
@@ -15,12 +15,14 @@
   (util/put-if-unset (ctx :replacements) file @[])
   (def {:file-cache file-cache} ctx)
   (unless (in file-cache file)
-    (put file-cache file (slurp file)))
+    (def source (slurp file))
+    (def lines (string/split "\n" source))
+    (put file-cache file {:source source :lines lines}))
   @{:name (if <name> (string <name>))
     :expectations @[]
     :file file
     :ran false
-    :location location})
+    :pos pos})
 
 (defn- should-run [ctx test]
   # TODO
@@ -59,13 +61,14 @@
 (defn- declare-test [<name> <test-type> <args> body]
   (when-let [ctx (dyn *global-test-context*)]
     (def test (make-test ctx <name>))
-    (if (should-run ctx test)
-      (do
+    (case (:test-predicate ctx test)
+      :ignore nil
+      true (do
         (array/push (ctx :tests) test)
         (wrap-test-body test ctx <test-type> <args>
           (with-dyns [*current-test* test]
             (macex body))))
-      (ignore (++ (ctx :skipped))))))
+      false (ignore (++ (ctx :skipped))))))
 
 (defmacro deftest [<name> & <body>]
   (declare-test <name> nil nil <body>))

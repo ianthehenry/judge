@@ -98,7 +98,7 @@ Uncaught exceptions cause tests to fail:
   ! running test: test
   ! <red>test raised:</>
   ! error: oh no
-  !   in <anonymous> [./script.janet] on line 2, column 1
+  !   in <anonymous> [$PWD/script.janet] on line 2, column 1
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 

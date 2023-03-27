@@ -57,37 +57,35 @@ results)
        [(tuple/sourcemap form)
         (prettify-many (serialize (first actual)))]]))
 
-#(defn safely-accept-corrections [corrected-filename original-filename file-contents]
-#  (def current-file-contents
-#    (with [source-file (file/open original-filename :rn)]
-#      (string (file/read source-file :all))))
-#
-#  (if (= (file-contents original-filename) current-file-contents)
-#    (os/rename corrected-filename original-filename)
-#    (eprint
-#      (colorize/fgf :yellow "source file %s has changed; refusing to overwrite with .corrected file"
-#        original-filename))))
+(defn safely-accept-corrections [corrected-filename original-filename {:source source}]
+  (def current-file-contents (slurp original-filename))
+  (if (deep= current-file-contents source)
+    (os/rename corrected-filename original-filename)
+    (eprint
+      (colorize/fgf :yellow "%s changed since test runner began; refusing to overwrite"
+        original-filename))))
 
-(defn- apply-replacements [file-cache replacements-by-file]
+(defn- apply-replacements [file-cache replacements-by-file accept]
   (eachp [file replacements] replacements-by-file
     (def corrected-file (string file ".tested"))
     (if (empty? replacements)
       (util/rm-p corrected-file)
       (do
+        (def file-cache-entry (in file-cache file))
         (spit corrected-file
-          (rewriter/rewrite-forms (in file-cache file) replacements))
-        #(when accept-corrected-files
-        #  (safely-accept-corrections corrected-file file file-cache))
+          (rewriter/rewrite-forms file-cache-entry replacements))
+        (when accept
+          (safely-accept-corrections corrected-file file file-cache-entry))
         ))))
 
 # TODO: should render these relative to the current working directory
-(defn- format-location [file [line col]]
+(defn- format-pos [file [line col]]
   (string/format "%s:%d:%d" file line col))
 
 (defn- name-of [test]
   (if-let [name (test :name)]
     name
-    (format-location (test :file) (test :location))))
+    (format-pos (test :file) (test :pos))))
 
 (def ctx-proto
   @{:on-test-error (fn [self err fib]
@@ -136,40 +134,107 @@ results)
       :ok)
     })
 
+(defn matches [ctx test [predicate-type & predicate-args]]
+  (case predicate-type
+    :pos (let [[file pos] predicate-args]
+      (and (= (test :file) file)
+           (rewriter/pos-in-form?
+             (in (ctx :file-cache) (test :file))
+             (test :pos)
+             pos)))
+    :name-prefix (string/has-prefix? (first predicate-args) (test :name))
+    :name-exact (= (first predicate-args) (test :name))))
+
+(def- some_ some)
+(defn- some [list pred]
+  (truthy? (some_ pred list)))
+
+(defn- with-trailing-slash [path]
+  (if (string/has-suffix? "/" path) path (string path "/")))
+
+(defn include-file? [file files-or-dirs]
+  (some files-or-dirs (fn [file-or-dir]
+    (or (= file file-or-dir)
+       (string/has-prefix? (with-trailing-slash file-or-dir) file)) files-or-dirs)))
+
+# It might would be nice to error if a predicate had no effect.
+(defn make-test-predicate [files includes excludes] (fn [ctx test]
+  (if (include-file? (test :file) files)
+    (let [include? (if (empty? includes)
+                     true
+                     (some includes |(matches ctx test $)))
+          exclude? (some excludes |(matches ctx test $))]
+      (and include? (not exclude?)))
+    :ignore)))
+
 (defn new [proto & kvs] (table/setproto (table ;kvs) proto))
 
+(def arg/prefix ["PREFIX" :string])
+(def arg/name ["NAME" :string])
+(def arg/target
+  (cmd/peg "FILE[:LINE:COL]"
+    ~{:main (* (+ (/ :specific ,|[:just ;$&]) (/ :general ,|[:all $])) -1)
+      :specific (* (<- (to ":")) ":" (number (to ":")) ":" (number (to -1)))
+      :general (<- (to -1))}))
+
 (cmd/defn main
-  [targets (array :file)]
+  `Test runner for Judge.
+
+   If no targets are given on the command line, Judge will look for tests in the current working directory.
+
+   Targets can be file names, directory names, or FILE:LINE:COL to run a test at a
+   specific location (which is mostly useful for editor tooling).`
+  [targets (array arg/target)
+   [name-prefix-selectors        --name] (array arg/prefix) "only run tests whose name starts with the given prefix"
+   [name-exact-selectors   --name-exact] (array arg/name)   "only run tests with this exact name"
+   [name-prefix-filters      --not-name] (array arg/prefix) "skip tests whose name starts with this prefix"
+   [name-exact-filters --not-name-exact] (array arg/name)   "skip tests whose name is exactly this prefix"
+   [--accept -a] (flag) "overwrite source files with .tested files"]
 
   (def targets
     (if (empty? targets)
-      ["."]
+      [[:all "."]]
       targets))
 
   # resolve all directories
-  (def inflated-targets (mapcat find-all-janet-files targets))
-  (loop [target :in inflated-targets :when (tuple? target) :let [[err] target]]
+  (def file-targets (map 1 targets))
+  (def found-files (mapcat find-all-janet-files file-targets))
+  (loop [f :in found-files :when (tuple? f) :let [[err] f]]
     (eprintf "error: %s" err)
     (os/exit 1))
+
+  # TODO: we'll actually get better stack traces if we run these
+  # with relative paths, not absolute paths. But I can't figure
+  # out how to dynamically require files with relative paths.
+  (def found-files (map to-abs found-files))
+
+  (def pos-selectors (seq [[mode file line col] :in targets :when (= mode :just)]
+    [:pos (to-abs file) [line col]]))
+
+  (def includes
+    (array/concat
+      pos-selectors
+      (map |[:name-prefix $] name-prefix-selectors)
+      (map |[:name-exact $] name-exact-selectors)))
+  (def excludes
+    (array/concat
+      (map |[:name-prefix $] name-prefix-filters)
+      (map |[:name-prefix $] name-exact-filters)))
 
   (def ctx (new ctx-proto
     :tests @[]
     :passed 0
     :failed 0
     :skipped 0
+    :test-predicate (make-test-predicate found-files includes excludes)
     :states @{}
     :file-cache @{}
     :replacements @{}))
   (put root-env *global-test-context* ctx)
 
-  # targets should be a list of files or a list of file:line:col.
-  (each target inflated-targets
-    (def [file line col] (string/split ":" target))
-    # TODO: we'll actually get better stack traces if we run these
-    # with relative paths, not absolute paths
-    (require (string "@" (to-abs (extless file)))))
+  (each file found-files
+    (require (string "@" (extless file))))
 
-  # TODO: we should catch this if it errors and fail the test suite
   (var teardown-failure false)
   (eachp [{:teardown teardown :name name} state] (ctx :states)
     (match state
@@ -185,7 +250,7 @@ results)
     (eprint (colorize/fg :red (name-of test) " did not run"))
     (++ unreachable))
 
-  (apply-replacements (ctx :file-cache) (ctx :replacements))
+  (apply-replacements (ctx :file-cache) (ctx :replacements) accept)
 
   (eprintf "%i passed %i failed %i skipped %i unreachable"
     (ctx :passed) (ctx :failed) (ctx :skipped) unreachable)

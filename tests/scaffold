@@ -59,23 +59,15 @@ judge() {
     | sed -E -e 's/\x1b\[32m/<grn>/g' \
     | sed -E -e 's/\x1b\[2m/<dim>/g' \
     | sed -E -e 's|\x1b\[0m|</>|g' \
-    | sed -E -e "s|$PWD|.|g"
+    | sed -E -e "s|$PWD|\$PWD|g"
 }
 
 run_err() {
   run "$@" | head -n1
 }
 
-show_file() {
-  if [[ -e "$1" ]]; then
-     grep -vF judge/judge < "$1"
-  else
-    echo "no corrected file"
-  fi
-}
-
 show_tested() {
   local file
   file=${1:-$DEFAULT_FILE}
-  show_file "$file.tested"
+  cat "$file.tested"
 }
