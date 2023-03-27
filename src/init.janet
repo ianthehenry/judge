@@ -1,4 +1,5 @@
 (use ./shared)
+(import ./util)
 
 (def- *current-test* (gensym))
 
@@ -8,6 +9,10 @@
 (defn- make-test [ctx <name>]
   (def location (tuple/sourcemap (dyn :macro-form)))
   (def file (dyn :current-file))
+  # we create this now because the presence of an empty
+  # list is significant -- it will cause us to delete the
+  # .tested file after we're done
+  (util/put-if-unset (ctx :replacements) file @[])
   (def {:file-cache file-cache} ctx)
   (unless (in file-cache file)
     (put file-cache file (slurp file)))
@@ -45,8 +50,11 @@
           [:ok ,$state] ((fn ,<args> ,;<body>) ,$state)
           [:error e fib] (propagate (string "failed to initialize context: " e) fib)))
       ~(do ,;<body>)))
-  ~(try (do ,<run-test> (,put ,(smuggle test) :ran true))
-     ([e fib] (,put ,(smuggle test) :error [e fib]))))
+  ~(do
+      (:on-test-start ,(smuggle ctx) ,(smuggle test))
+      (try ,<run-test>
+         ([e fib] (,put ,(smuggle test) :error [e fib])))
+      (:on-test-end ,(smuggle ctx) ,(smuggle test))))
 
 (defn- declare-test [<name> <test-type> <args> body]
   (when-let [ctx (dyn *global-test-context*)]

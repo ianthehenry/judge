@@ -5,7 +5,7 @@ root=$(dirname $TESTDIR)
 if [[ ! -e jpm_tree/ ]]; then
   rsync -a "$root/jpm_tree/" jpm_tree/
   TREE=$(pwd)/jpm_tree
-  (cd "$root"; jpm --tree=$TREE install >/dev/null)
+  (cd "$root"; jpm --tree=$TREE install >/dev/null 2>/dev/null)
 fi
 
 relative_path_to=$(

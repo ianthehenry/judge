@@ -32,14 +32,11 @@
 (defn slice-len [target start len]
   (slice target start (+ start len)))
 
-(defmacro get-or-put [t k v]
-  (with-syms [$t $k $v]
+(defmacro put-if-unset [t k v]
+  (with-syms [$t $k]
     ~(let [,$t ,t ,$k ,k]
-      (if-let [,$v (in ,$t ,$k)]
-        ,$v
-        (let [,$v ,v]
-          (put ,$t ,$k ,$v)
-          ,$v)))))
+      (when (nil? (in ,$t ,$k))
+        (put ,$t ,$k ,v)))))
 
 (defn deep-same? [list]
   (case (length list)

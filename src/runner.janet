@@ -89,6 +89,55 @@ results)
     name
     (format-location (test :file) (test :location))))
 
+(def ctx-proto
+  @{:on-test-error (fn [self err fib]
+      (eprint (colorize/fg :red "test raised:"))
+      (debug/stacktrace fib err ""))
+
+    :on-test-start (fn [self test]
+      (put test :ran true)
+      (eprint "running test: " (name-of test)))
+
+    :on-test-end (fn [self test]
+      (def {:expectations expectations :file file} test)
+
+      (var failed false)
+      (match test
+        {:error [err fib]} (do
+          (:on-test-error self err fib)
+          (set failed true)))
+
+      (each expectation expectations
+        (case (:report-expectation self test expectation)
+          :error (set failed true)))
+
+      (if failed
+        (++ (self :failed))
+        (++ (self :passed))))
+
+    :add-replacement (fn [self test replacement]
+      (array/push (in (self :replacements) (test :file))
+        replacement))
+
+    :report-expectation (fn [self test expectation]
+      (when-let [[err replacement] (expectation-error expectation)]
+        (def current-form (rewriter/get-form (in (self :file-cache) (test :file))
+          (tuple/sourcemap (expectation :form))))
+        (unless replacement
+          (eprint (colorize/fg :red err)))
+        # TODO: this should actually work with multi-line forms
+        (eprint (colorize/fg :red "- " current-form))
+        (when replacement
+          (def new-form
+            (rewriter/rewrite-form current-form [1 1] (in replacement 1)))
+          (eprint (colorize/fg :green "+ " new-form))
+          (:add-replacement self test replacement))
+        (break :error))
+      :ok)
+    })
+
+(defn new [proto & kvs] (table/setproto (table ;kvs) proto))
+
 (cmd/defn main
   [targets (array :file)]
 
@@ -103,11 +152,14 @@ results)
     (eprintf "error: %s" err)
     (os/exit 1))
 
-  (def ctx @{
+  (def ctx (new ctx-proto
     :tests @[]
+    :passed 0
+    :failed 0
     :skipped 0
     :states @{}
-    :file-cache @{}})
+    :file-cache @{}
+    :replacements @{}))
   (put root-env *global-test-context* ctx)
 
   # targets should be a list of files or a list of file:line:col.
@@ -122,50 +174,15 @@ results)
     (match state
       [:ok state] (teardown state)))
 
-  (def replacements-by-file @{})
-
-  (var passed 0)
-  (var failed 0)
   (var unreachable 0)
-  (each test (ctx :tests)
-    # we put an entry here to indicate that we ran a test
-    # in this file. we will, later, use the presence of
-    # an empty array to delete the .tested file
-    (def replacements (util/get-or-put replacements-by-file (test :file) @[]))
-    (eprint "running test: " (name-of test))
-    (match test
-      {:error [err fib]} (do
-        (eprint (colorize/fg :red "test raised:"))
-        (debug/stacktrace fib err "")
-        (++ failed))
-      {:ran false} (do
-        (eprint (colorize/fg :red "test did not run"))
-        (++ unreachable))
-      {:ran true} (do
-        (def {:expectations expectations :file file} test)
-        (var success true)
-        (each expectation expectations
-          (if-let [[err replacement] (expectation-error expectation)]
-            (do
-              (def current-form (rewriter/get-form (in (ctx :file-cache) (test :file))
-                (tuple/sourcemap (expectation :form))))
-              (unless replacement
-                (eprint (colorize/fg :red err)))
-              (eprint (colorize/fg :red "- " current-form))
-              (set success false)
-              (when replacement
-                (def new-form
-                  (rewriter/rewrite-form current-form [1 1] (in replacement 1)))
-                (eprint (colorize/fg :green "+ " new-form))
-                (array/push replacements replacement)))))
-        (if success
-          (++ passed)
-          (++ failed)))))
+  (loop [test :in (ctx :tests) :when (not (test :ran))]
+    (eprint (colorize/fg :red (name-of test) " did not run"))
+    (++ unreachable))
 
-  (apply-replacements (ctx :file-cache) replacements-by-file)
+  (apply-replacements (ctx :file-cache) (ctx :replacements))
 
   (eprintf "%i passed %i failed %i skipped %i unreachable"
-    passed failed (ctx :skipped) unreachable)
-  (if (> (+ unreachable failed) 0)
+    (ctx :passed) (ctx :failed) (ctx :skipped) unreachable)
+  (if (> (+ unreachable (ctx :failed)) 0)
     (os/exit 1))
   )

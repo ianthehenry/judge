@@ -88,7 +88,6 @@ Tests passes:
   ! running test: hello
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
-TODO: this should probably also patch. And report an unreachable expectation.
 Tests fails due to error (this should probably also patch!):
 
   $ use <<EOF
@@ -103,6 +102,10 @@ Tests fails due to error (this should probably also patch!):
   ! <red>test raised:</>
   ! error: oh no
   !   in <anonymous> [./script.janet] on line 2, column 1
+  ! <red>- (test (+ 1 2) 0)</>
+  ! <grn>+ (test (+ 1 2) 3)</>
+  ! <red>did not reach expectation</>
+  ! <red>- (test (+ 1 2) 0)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
@@ -130,8 +133,7 @@ Unreachable test:
   >     (test (+ 1 2) 3)))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>test did not run</>
+  ! <red>hello did not run</>
   ! 0 passed 0 failed 0 skipped 1 unreachable
   [1]
 
