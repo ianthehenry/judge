@@ -51,15 +51,19 @@ run() {
     #| sed -E -e 's/on line [0-9]+, column [0-9]+/on line LINE, column COL/g'
 }
 
+sanitize() {
+  expand \
+  | sed -E -e 's/\x1b\[31m/<red>/g' \
+  | sed -E -e 's/\x1b\[32m/<grn>/g' \
+  | sed -E -e 's/\x1b\[2m/<dim>/g' \
+  | sed -E -e 's|\x1b\[0m|</>|g' \
+  | sed -E -e "s|$PWD|\$PWD|g"
+}
+
 judge() {
   (jpm_tree/bin/judge "$@" 3>&1 1>&2 2>&3 3>&- \
     | sed -e 's/^/! /') 2>&1 \
-    | expand \
-    | sed -E -e 's/\x1b\[31m/<red>/g' \
-    | sed -E -e 's/\x1b\[32m/<grn>/g' \
-    | sed -E -e 's/\x1b\[2m/<dim>/g' \
-    | sed -E -e 's|\x1b\[0m|</>|g' \
-    | sed -E -e "s|$PWD|\$PWD|g"
+  | sanitize
 }
 
 run_err() {

@@ -83,23 +83,27 @@
         :reset ,reset
         :teardown ,teardown})))
 
-(defn- actual-expectation [test expr expected printer]
+(defn- actual-expectation [test expr expected stabilizer printer]
   (def expectation
     @{:expected expected
       :form (dyn *macro-form*)
+      :stabilizer stabilizer
       :printer printer
       :actual @[]})
   (array/push (test :expectations) expectation)
   ~(try (,array/push (,(smuggle expectation) :actual) ,expr)
     ([e fib] (,put ,(smuggle expectation) :error [e fib]))))
 
-(defn- test* [<expr> <expected> printer]
+(defn- test* [<expr> <expected> stabilizer printer]
   (if-let [test (dyn *current-test*)]
-    (actual-expectation test <expr> <expected> printer)
+    (actual-expectation test <expr> <expected> stabilizer printer)
     (declare-test nil nil nil [(dyn *macro-form*)])))
 
 (defn- normal-printer [form]
   (string/format "%q" (util/bracketify form)))
+
+(defn- macro-printer [form]
+  (string/format "%q" form))
 
 (defn- gensymbly? [sym]
   (and
@@ -107,24 +111,24 @@
     (= (length sym) 7)
     (string/has-prefix? "_0" sym)))
 
-(defn- macro-printer [form]
+(defn- macro-stabilize [form]
   (var i 1)
   (def syms @{})
-  (->> form
-    (walk (fn recur [node]
-      (if (gensymbly? node)
-        (util/get-or-put syms node (do
-          (let [sym (symbol "<" i ">")]
-            (++ i)
-            sym)))
-        (walk recur node))))
-    (string/format "%q")))
+
+  (defn recur [node]
+    (if (gensymbly? node)
+      (util/get-or-put syms node (do
+        (let [sym (symbol "<" i ">")]
+          (++ i)
+          sym)))
+      (walk recur node)))
+  (recur (util/stabilize form)))
 
 (defmacro test-error [<expr> & <expected>]
-  (test* (util/get-error <expr>) <expected> normal-printer))
+  (test* (util/get-error <expr>) <expected> util/stabilize normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
-  (test* ~(,macex1 ',<expr>) <expected> macro-printer))
+  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize macro-printer))
 
 (defmacro test [<expr> & <expected>]
-  (test* <expr> <expected> normal-printer))
+  (test* <expr> <expected> util/stabilize normal-printer))

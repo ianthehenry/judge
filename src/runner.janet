@@ -24,12 +24,14 @@ results)
     :expected expected
     :form form
     :error err
-    :printer printer}]
+    :printer printer
+    :stabilizer stabilizer
+    }]
   (cond
     (truthy? err) (let [[err fib] err] [err nil])
     (empty? actual) ["did not reach expectation" nil]
     (not (util/deep-same? actual)) ["inconsistent results" nil]
-    (let [actual (util/stabilize (first actual))]
+    (let [actual (stabilizer (first actual))]
       (unless (deep= [actual] expected)
         [nil [(tuple/sourcemap form) (printer actual)]]))))
 

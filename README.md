@@ -2,11 +2,22 @@
 
 Judge is a library for writing inline snapshot tests in [Janet](https://github.com/janet-lang/janet).
 
-Judge lets you write your tests in any file. You can put them in `test/` subdirectory, following standard Janet convention, or you can put tests right next to the code that you're testing:
+Judge tests work a little differently than traditional tests. Instead of assertions, you write expressions to observe. Like this:
+
+```janet
+(test (+ 1 1))
+```
+
+When you run Judge, it will replace the source code with the result of this expression:
+
+```janet
+(test (+ 1 1) 2)
+```
+
+The Judge test runner gives you a lot flexibility over where you structure your tests. You *can* put all your tests in a `test/` subdirectory, following standard Janet convention, or you can put tests right next to the code that you're testing:
 
 ```janet
 # sort.janet
-
 (use judge)
 
 (defn slow-sort [list]
@@ -25,20 +36,18 @@ Judge lets you write your tests in any file. You can put them in `test/` subdire
 
 Run your tests with the Judge test runner:
 
-```
-TODO
-
-$ jpm_tree/bin/judge sort.janet
-test failed
+```janet
+$ judge
+running test: sort.janet:14:1
 - (test (slow-sort [3 1 4 2]))
 + (test (slow-sort [3 1 4 2]) [1 2 3 4])
+0 passed 1 failed 0 skipped 0 unreachable
 ```
 
 And look! It fixed your tests:
 
 ```janet
 # sort.janet.tested
-
 (use judge)
 
 (defn slow-sort [list]
@@ -59,13 +68,13 @@ You can then diff the `.tested` file with your original source and interactively
 
 Judge supports "anonymous" tests, as seen above, and named tests, which can group multiple `(test)` invocations together:
 
-```
+```janet
 (deftest "sorting tests"
   (test (slow-sort [3 1 2 4]) [1 2 3 4])
   (test (slow-sort [1 1 1 1]) [1 1 1 1]))
 ```
 
-When you aren't using the `judge` test runner, the `test` and `deftest` macros are no-ops. So these tests will not execute during normal evaluation: tests won't slow down your program, and you can freely distribute modules with Judge tests as libraries without worrying about.
+When you aren't using the `judge` test runner, all of the macros exposed by Judge are no-ops. So these tests will never execute during normal evaluation: tests won't slow down your program, and you can freely distribute modules with Judge tests as libraries without your users even knowing.
 
 # Usage
 
@@ -78,8 +87,7 @@ So that you can just run it as `judge`.
 You can also add this to your `project.janet` file:
 
 ```janet
-(task "test" []
-  ($ jpm_tree/bin/judge))
+(task "test" [] (shell "jpm_tree/bin/judge"))
 ```
 
 To run Judge with a normal `jpm test` invocation.
@@ -104,6 +112,28 @@ You don't have to use `deftest`, though. You can create anonymous, single-expres
 (use judge)
 
 (test (+ 1 2) 3)
+```
+
+## `test-macro`
+
+`test-macro` is just like `test`ing the result of a `macex1` expression, but it prints with slightly nicer output:
+
+```janet
+(test-macro (let [x 1] x) (do (def x 1) x))
+```
+
+And `test-macro` will replace `gensym`'d identifiers with stable symbols:
+
+```janet
+(test-macro (and x (+ 1 2)) (if (def <1> x) (+ 1 2) <1>))
+```
+
+## `test-error`
+
+Requires that the provided expression raises an error:
+
+```janet
+(test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")
 ```
 
 ## Running tests
@@ -156,11 +186,9 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 
 Judge v2 is a complete rewrite with an incompatible API.
 
-The biggest difference is that Judge now ships with a test runner script instead of defining a `main` function. This makes it possible to write tests inside regular source files, instead of only in a `test/` subdirectory. But it also means that `jpm test` no longer works transparently out of the box.
+The biggest difference is that Judge now ships with a test runner script instead of defining a `main` function. This makes it possible to write tests inside regular source files, instead of only in a `test/` subdirectory. But it also means that `jpm test` no longer works transparently out of the box -- see above for instructions on how to restore it.
 
-TODO: write something about how to get `jpm test`.
-
-- `(expect)` is now called `(test)`. `(test)` is now called `(deftest)`. `(deftest)` is now called `(deftest-type)`, and works differently.
+- `expect` is now called `test`, and `expect-error` is now called `test-error`. `test` is now called `deftest`. `deftest` is now called `deftest-type`, and works slightly differently.
 
     ```janet
     # v1
@@ -203,6 +231,8 @@ TODO: write something about how to get `jpm test`.
     ```
 
 - The test runner now prints the actual text of failing expectations, not a serialization of the parsed syntax tree. This means it preserves line-breaks and other formatting.
+
+- Added `test-macro`.
 
 - TODO: `test-stdout` and `test-stderr`.
 
