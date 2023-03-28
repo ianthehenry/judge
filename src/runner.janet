@@ -4,37 +4,13 @@
 (import ./colorize)
 (use ./shared)
 
-(defn but-last [t]
-  (tuple/slice t 0 (- (length t) 1)))
-(defn basename [path]
-  (last (string/split "/" path)))
-(defn dirname [path]
-  (string/join (but-last (string/split "/" path)) "/"))
-(defn split-path [path]
-  [(but-last (string/split "/" path))
-   (basename path)])
-
-(defn chop-ext [path]
-  (def [dir base] (split-path path))
-  (def components (string/split "." base))
-  (def leading (tuple/slice components 0 (- (length components) 1)))
-  (string/join [;dir (string/join leading ".")] "/"))
-
-(defn to-abs [path]
-  (if (string/has-prefix? "/" path)
-    path
-    (string (os/cwd) "/" path)))
-
-(defn- hidden? [path]
-  (string/has-prefix? "." (basename path)))
-
 (defn find-all-janet-files [path &opt explicit results]
   (default explicit true)
   (default results @[])
-  (when (or explicit (not (hidden? path)))
+  (when (or explicit (not (util/hidden? path)))
     (case (os/stat path :mode)
       :directory
-        (when (or explicit (not= (basename path) "jpm_tree"))
+        (when (or explicit (not= (util/basename path) "jpm_tree"))
           (each entry (os/dir path)
             (find-all-janet-files (string path "/" entry) false results)))
       :file (if (string/has-suffix? ".janet" path) (array/push results path))
@@ -204,10 +180,10 @@ results)
   # TODO: we'll actually get better stack traces if we run these
   # with relative paths, not absolute paths. But I can't figure
   # out how to dynamically require files with relative paths.
-  (def found-files (map to-abs found-files))
+  (def found-files (map util/to-abs found-files))
 
   (def pos-selectors (seq [[mode file line col] :in targets :when (= mode :just)]
-    [:pos (to-abs file) [line col]]))
+    [:pos (util/to-abs file) [line col]]))
 
   (def includes
     (array/concat
@@ -231,7 +207,7 @@ results)
   (put root-env *global-test-context* ctx)
 
   (each file found-files
-    (require (string "@" (chop-ext file))))
+    (require (string "@" (util/chop-ext file))))
 
   (var teardown-failure false)
   (eachp [{:teardown teardown :name name} state] (ctx :states)

@@ -56,3 +56,30 @@
   (if (tuple? node)
     (tuple/brackets ;(walk stabilize node))
     (walk bracketify node)))
+
+(defn but-last [t]
+  (tuple/slice t 0 (- (length t) 1)))
+
+(defn basename [path]
+  (last (string/split "/" path)))
+
+(defn dirname [path]
+  (string/join (but-last (string/split "/" path)) "/"))
+
+(defn split-path [path]
+  [(but-last (string/split "/" path))
+   (basename path)])
+
+(defn chop-ext [path]
+  (def [dir base] (split-path path))
+  (def components (string/split "." base))
+  (def leading (tuple/slice components 0 (- (length components) 1)))
+  (string/join [;dir (string/join leading ".")] "/"))
+
+(defn to-abs [path]
+  (if (string/has-prefix? "/" path)
+    path
+    (string (os/cwd) "/" path)))
+
+(defn hidden? [path]
+  (string/has-prefix? "." (basename path)))
