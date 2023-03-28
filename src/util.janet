@@ -45,3 +45,10 @@
     (do
       (def proto (in list 0))
       (all |(deep= proto $) list))))
+
+(defn get-error [<expr>]
+  (with-syms [$errored $err]
+    ~(let [[,$err ,$errored]
+           (try [,<expr> false]
+             ([,$err] [,$err true]))]
+      (if ,$errored ,$err (,error "did not error")))))

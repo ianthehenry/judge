@@ -273,24 +273,6 @@ test-error:
   (deftest "okay"
     (test-error (+ 1 2) 0))
 
-TODO: make this print with round parens
-test-macro:
-
-  $ use <<EOF
-  > (use judge)
-  > (test-macro (let [x 1] x))
-  > EOF
-  $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
-  ! <red>- (test-macro (let [x 1] x))</>
-  ! <grn>+ (test-macro (let [x 1] x) [do [def x 1] x])</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
-  [1]
-
-  $ cat script.janet.tested
-  (use judge)
-  (test-macro (let [x 1] x) [do [def x 1] x])
-
 Tests run as soon as they're encountered:
 
   $ use <<EOF

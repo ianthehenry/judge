@@ -87,31 +87,32 @@
         :reset ,reset
         :teardown ,teardown})))
 
-(defn- actual-expectation [test expr expected]
+(defn- actual-expectation [test expr expected printer]
   (def expectation
     @{:expected expected
       :form (dyn *macro-form*)
+      :printer printer
       :actual @[]})
   (array/push (test :expectations) expectation)
   ~(try (,array/push (,(smuggle expectation) :actual) ,expr)
     ([e fib] (,put ,(smuggle expectation) :error [e fib]))))
 
-(defmacro test [<expr> & <expected>]
+(defn- test* [<expr> <expected> printer]
   (if-let [test (dyn *current-test*)]
-    (actual-expectation test <expr> <expected>)
+    (actual-expectation test <expr> <expected> printer)
     (declare-test nil nil nil [(dyn *macro-form*)])))
 
-(defn- get-error [<expr>]
-  (with-syms [$errored $err]
-    ~(let [[,$err ,$errored]
-           (try [,<expr> false]
-             ([,$err] [,$err true]))]
-      (if ,$errored ,$err (,error "did not error")))))
+(defn- normal-printer [x]
+  (string/format "%j" (util/freeze-with-brackets x)))
+
+(defn- macro-printer [x]
+  (string/format "%q" x))
 
 (defmacro test-error [<expr> & <expected>]
-  (tuple/setmap ~(as-macro ,test ,(get-error <expr>) ,;<expected>)
-    ;(tuple/sourcemap (dyn *macro-form*))))
+  (test* (util/get-error <expr>) <expected> normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
-  (tuple/setmap ~(as-macro ,test (,macex1 ',<expr>) ,;<expected>)
-    ;(tuple/sourcemap (dyn *macro-form*))))
+  (test* ~(,macex1 ',<expr>) <expected> macro-printer))
+
+(defmacro test [<expr> & <expected>]
+  (test* <expr> <expected> normal-printer))

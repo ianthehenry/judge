@@ -41,27 +41,19 @@
       nil (array/push results [(string/format "could not read %q" path)])))
 results)
 
-(defn- serialize [x]
-  [(util/freeze-with-brackets x)])
-
-(defn- prettify [value] (string/format "%j" value))
-(defn- prettify-many [values] (string/join (map prettify values) " "))
-
-(defn- expectation-error [expectation]
-  (def {:actual actual :expected expected :form form :error err} expectation)
+(defn- expectation-error
+  [{:actual actual
+    :expected expected
+    :form form
+    :error err
+    :printer printer}]
   (cond
     (truthy? err) (let [[err fib] err] [err nil])
     (empty? actual) ["did not reach expectation" nil]
     (not (util/deep-same? actual)) ["inconsistent results" nil]
-    (empty? expected)
-      ["virgin soil"
-       [(tuple/sourcemap form)
-        (prettify-many (serialize (first actual)))]]
-    (deep-not= (serialize (first actual)) expected)
-      # todo: duplicated code. do these need to be different?
-      ["mismatch"
-       [(tuple/sourcemap form)
-        (prettify-many (serialize (first actual)))]]))
+    (let [actual (first actual)]
+      (unless (deep= [actual] expected)
+        [nil [(tuple/sourcemap form) (printer actual)]]))))
 
 (defn safely-accept-corrections [corrected-filename original-filename {:source source}]
   (def current-file-contents (slurp original-filename))
