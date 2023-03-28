@@ -110,7 +110,7 @@
         0 (error "cannot patch")
         1 (errorf "cannot patch")
         2 third-form-end
-        3 (in components 2)))
+        (in components 2)))
 
     (def third-form-len (- third-form-end third-form-start))
 

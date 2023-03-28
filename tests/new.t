@@ -304,3 +304,16 @@ Tests run as soon as they're encountered:
   ! running test: $PWD/script.janet:3:1
   ! running test: $PWD/script.janet:5:1
   ! 2 passed 0 failed 0 skipped 0 unreachable
+
+Multiple expectations:
+
+  $ use <<EOF
+  > (use judge)
+  > (test 0 0 1 2)
+  > EOF
+  $ judge script.janet
+  ! running test: $PWD/script.janet:2:1
+  ! <red>- (test 0 0 1 2)</>
+  ! <grn>+ (test 0 0)</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]
