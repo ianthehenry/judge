@@ -36,7 +36,7 @@ results)
   (if (deep= current-file-contents source)
     (os/rename corrected-filename original-filename)
     (eprint
-      (colorize/fgf :yellow "%s changed since test runner began; refusing to overwrite"
+      (colorize/fgf :red "%s changed since test runner began; refusing to overwrite"
         original-filename))))
 
 (defn- apply-replacements [file-cache replacements-by-file accept]
