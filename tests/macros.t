@@ -39,10 +39,7 @@ test-macro simplifies gensyms:
   $ mv script.janet{.tested,}
   $ judge script.janet
   ! running test: $PWD/script.janet:2:1
-  ! <red>- (test-macro (each x x) (do (def <1> x) (var <2> ("<function next>" <1> nil)) (while ("<function not=>" nil <2>) (def x ("<function in>" <1> <2>)) (set <2> ("<function next>" <1> <2>)))))</>
-  ! <grn>+ (test-macro (each x x) (do (def <1> x) (var <2> ("<function next>" <1> nil)) (while ("<function not=>" nil <2>) (def x ("<function in>" <1> <2>)) (set <2> ("<function next>" <1> <2>)))))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
-  [1]
+  ! 1 passed 0 failed 0 skipped 0 unreachable
 
 Macros that raise are gracefully handled:
 
