@@ -24,10 +24,6 @@
     :ran false
     :pos pos})
 
-(defn- should-run [ctx test]
-  # TODO
-  true)
-
 (defn- get-state [ctx test-type]
   (def states (ctx :states))
   (def state
@@ -102,11 +98,27 @@
     (actual-expectation test <expr> <expected> printer)
     (declare-test nil nil nil [(dyn *macro-form*)])))
 
-(defn- normal-printer [x]
-  (string/format "%j" (util/freeze-with-brackets x)))
+(defn- normal-printer [form]
+  (string/format "%q" (util/bracketify form)))
 
-(defn- macro-printer [x]
-  (string/format "%q" x))
+(defn- gensymbly? [sym]
+  (and
+    (symbol? sym)
+    (= (length sym) 7)
+    (string/has-prefix? "_0" sym)))
+
+(defn- macro-printer [form]
+  (var i 1)
+  (def syms @{})
+  (->> form
+    (walk (fn recur [node]
+      (if (gensymbly? node)
+        (util/get-or-put syms node (do
+          (let [sym (symbol "<" i ">")]
+            (++ i)
+            sym)))
+        (walk recur node))))
+    (string/format "%q")))
 
 (defmacro test-error [<expr> & <expected>]
   (test* (util/get-error <expr>) <expected> normal-printer))

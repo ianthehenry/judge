@@ -1,29 +1,3 @@
-(defn- has-source-map? [x]
-  (some |(not= $ -1) (tuple/sourcemap x)))
-
-(defn- tuple-of-type [elems type]
-  (case type
-    :brackets (tuple/brackets ;elems)
-    :parens (tuple ;elems)
-    (errorf "illegal tuple type %p" type)))
-
-(defn- tuple-preserve [original mapped]
-  (tuple-of-type mapped
-    (if (has-source-map? original)
-      (tuple/type original)
-      :brackets)))
-
-(defn freeze-with-brackets [x]
-  (case (type x)
-    :array (tuple/brackets ;(map freeze-with-brackets x))
-    :tuple (tuple-preserve x (map freeze-with-brackets x))
-    :table (if-let [p (table/getproto x)]
-             (freeze-with-brackets (merge (table/clone p) x))
-             (struct ;(map freeze-with-brackets (kvs x))))
-    :struct (struct ;(map freeze-with-brackets (kvs x)))
-    :buffer (string x)
-    x))
-
 (defn rm-p [file]
   (when (os/stat file)
     # TODO: there's a little bit of a race here... should add rm-p to janet
@@ -52,3 +26,33 @@
            (try [,<expr> false]
              ([,$err] [,$err true]))]
       (if ,$errored ,$err (,error "did not error")))))
+
+(defmacro get-or-put [t k v]
+  (with-syms [$t $k $v]
+    ~(let [,$t ,t ,$k ,k]
+      (if-let [,$v (in ,$t ,$k)]
+        ,$v
+        (let [,$v ,v]
+          (put ,$t ,$k ,$v)
+          ,$v)))))
+
+(defn peg-replace [pat f str]
+  (first (peg/match ~(* (% (any (+ (/ (<- ,pat) ,f) (<- 1)))) -1) str)))
+
+(defn stabilize [node]
+  (var i 1)
+  (def hex-cache @{})
+  (def uniquify (fn [str]
+    (get-or-put hex-cache str
+      (let [x (string/format " 0x%d>" i)] (++ i) x))))
+  (defn recur [node]
+    (cond
+      (or (function? node) (cfunction? node) (abstract? node))
+        (peg-replace ~(* " 0x" :h+ ">") uniquify (string node))
+      (walk recur node)))
+  (recur node))
+
+(defn bracketify [node]
+  (if (tuple? node)
+    (tuple/brackets ;(walk stabilize node))
+    (walk bracketify node)))

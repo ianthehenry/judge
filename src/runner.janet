@@ -51,7 +51,7 @@ results)
     (truthy? err) (let [[err fib] err] [err nil])
     (empty? actual) ["did not reach expectation" nil]
     (not (util/deep-same? actual)) ["inconsistent results" nil]
-    (let [actual (first actual)]
+    (let [actual (util/stabilize (first actual))]
       (unless (deep= [actual] expected)
         [nil [(tuple/sourcemap form) (printer actual)]]))))
 
