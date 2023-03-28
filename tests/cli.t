@@ -150,8 +150,24 @@ Accepting refuses to run if file has been modified:
   $ sleep 0.01
 
   $ echo "modified" > test.janet
+  $ sleep 0.1
   ! running test: test
   ! <red>- (test 1)</>
   ! <grn>+ (test 1 1)</>
   ! <red>$PWD/test.janet changed since test runner began; refusing to overwrite</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable (no-eol)
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+
+Can be used as a jpm task:
+
+  $ use test.janet <<EOF
+  > (use judge)
+  > (test 1 1)
+  > EOF
+
+  $ cat >project.janet <<EOF
+  > (task "test" [] (shell "jpm_tree/bin/judge"))
+  > EOF
+
+  $ jpm test 2>&1 | sanitize
+  running test: $PWD/test.janet:2:1
+  1 passed 0 failed 0 skipped 0 unreachable

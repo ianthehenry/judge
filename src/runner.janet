@@ -13,7 +13,9 @@
         (when (or explicit (not= (util/basename path) "jpm_tree"))
           (each entry (os/dir path)
             (find-all-janet-files (string path "/" entry) false results)))
-      :file (if (string/has-suffix? ".janet" path) (array/push results path))
+      :file
+        (when (or explicit (not= (util/basename path) "project.janet"))
+          (if (string/has-suffix? ".janet" path) (array/push results path)))
       nil (array/push results [(string/format "could not read %q" path)])))
 results)
 
