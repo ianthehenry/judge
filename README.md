@@ -1,6 +1,15 @@
 # judge
 
-Judge is a library for writing inline snapshot tests in [Janet](https://github.com/janet-lang/janet).
+Judge is a library for writing inline snapshot tests in [Janet](https://github.com/janet-lang/janet). You can install it with `jpm`:
+
+```janet
+# project.janet
+(declare-project
+  :dependencies [
+    {:url "https://github.com/ianthehenry/judge.git"
+     :tag "v2.0.0"}
+  ])
+```
 
 Judge tests work a little differently than traditional tests. Instead of assertions, you write expressions to observe. Like this:
 
@@ -180,9 +189,13 @@ Just to recap: if the test-runner is running *N* custom tests, it will run setup
 
 It's important that reset *actually* resets the test state, so that it doesn't matter what order tests run in or what other tests ran before your test. There are few greater sins than writing tests that can't be run independently.
 
+# Hacking
+
+Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
+
 # Changelog
 
-## v2.0.0 2023-??-??
+## v2.0.0 2023-03-27
 
 Judge v2 is a complete rewrite with an incompatible API.
 
@@ -233,8 +246,6 @@ The biggest difference is that Judge now ships with a test runner script instead
 - The test runner now prints the actual text of failing expectations, not a serialization of the parsed syntax tree. This means it preserves line-breaks and other formatting.
 
 - Added `test-macro`.
-
-- TODO: `test-stdout` and `test-stderr`.
 
 ## v1.0.0 2022-08-22
 
