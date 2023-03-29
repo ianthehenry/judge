@@ -83,3 +83,6 @@
 
 (defn hidden? [path]
   (string/has-prefix? "." (basename path)))
+
+(defn last? [i list]
+  (= i (- (length list) 1)))

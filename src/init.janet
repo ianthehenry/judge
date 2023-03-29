@@ -136,9 +136,8 @@
   (def col (- col 1))
   (def lines (string/split "\n" str))
   (def indent (string/repeat " " (+ col 2)))
-  (def last? |(= $ (- (length lines) 1)))
   (def indented (seq [[i line] :pairs lines]
-    (if (and (last? i) (empty? line))
+    (if (and (util/last? i lines) (empty? line))
       (string (string/repeat " " col) line)
       (string indent line))))
   (string/join indented "\n"))
