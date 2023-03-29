@@ -17,6 +17,7 @@ Exported symbols:
   test
   test-error
   test-macro
+  test-stdout
 
 Installed files:
 

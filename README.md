@@ -45,7 +45,7 @@ The Judge test runner gives you a lot flexibility over where you structure your 
 
 Run your tests with the Judge test runner:
 
-```janet
+```
 $ judge
 running test: sort.janet:14:1
 - (test (slow-sort [3 1 4 2]))
@@ -93,6 +93,29 @@ Judge distributes a runner executable called `judge`. When you install Judge usi
 
 So that you can just run it as `judge`.
 
+```
+$ judge --help
+Test runner for Judge.
+
+  jpm_tree/bin/judge FILE[:LINE:COL]
+
+If no targets are given on the command line, Judge will look for tests in the
+current working directory.
+
+Targets can be file names, directory names, or FILE:LINE:COL to run a test at a
+specific location (which is mostly useful for editor tooling).
+
+=== flags ===
+
+  [--help]                   : Print this help text and exit
+  [-a], [--accept]           : overwrite source files with .tested files
+  [--not-name-exact NAME]... : skip tests whose name is exactly this prefix
+  [--name-exact NAME]...     : only run tests with this exact name
+  [--not-name PREFIX]...     : skip tests whose name starts with this prefix
+  [--name PREFIX]...         : only run tests whose name starts with the given
+                               prefix
+```
+
 You can also add this to your `project.janet` file:
 
 ```janet
@@ -103,25 +126,41 @@ To run Judge with a normal `jpm test` invocation.
 
 ## Writing tests
 
-The first form passed to the `(deftest)` macro is the name of the test. It can be a symbol or a string:
+## `test`
 
 ```janet
-(use judge)
-
-(deftest math
-  (test (+ 2 2) 4))
-
-(deftest "advanced math"
-  (test (* 2 2) 4))
-```
-
-You don't have to use `deftest`, though. You can create anonymous, single-expression tests by using `test` at the top-level:
-
-```janet
-(use judge)
-
 (test (+ 1 2) 3)
 ```
+
+## `test-error`
+
+Requires that the provided expression raises an error:
+
+```janet
+(test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")
+```
+
+## `test-stdout`
+
+```janet
+(test-stdout (print "hello") `
+  hello
+`)
+```
+
+If the expression to test does not evaluate to `nil`, it will be included in the test as well:
+
+```janet
+(defn add [a b]
+  (printf "adding %q and %q" a b)
+  (+ a b))
+
+(test-stdout (add 1 2) 3 `
+  adding 1 and 2
+`)
+```
+
+Due to ambiguity in the Janet parser for multi-line strings, a trailing newline will always be added to the output if it does not exist.
 
 ## `test-macro`
 
@@ -137,12 +176,26 @@ And `test-macro` will replace `gensym`'d identifiers with stable symbols:
 (test-macro (and x (+ 1 2)) (if (def <1> x) (+ 1 2) <1>))
 ```
 
-## `test-error`
+## `deftest`
 
-Requires that the provided expression raises an error:
+The first form passed to the `(deftest)` macro is the name of the test. It can be a symbol or a string:
 
 ```janet
-(test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")
+(use judge)
+
+(deftest math
+  (test (+ 2 2) 4))
+
+(deftest "advanced math"
+  (test (* 2 2) 4))
+```
+
+You don't have to use `deftest`, though. You can create anonymous, single-expression tests by using any of the `test` macros at the top level:
+
+```janet
+(use judge)
+
+(test (+ 1 2) 3)
 ```
 
 ## Running tests
@@ -194,6 +247,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## (upcoming) v2.1.0 2023-??-??
+
+- Added `test-stdout`
 
 ## v2.0.0 2023-03-27
 

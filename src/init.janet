@@ -99,6 +99,8 @@
     (actual-expectation test <expr> <expected> stabilizer printer)
     (declare-test nil nil nil [(dyn *macro-form*)])))
 
+(defn- normal-stabilize [node] [(util/stabilize node)])
+
 (defn- normal-printer [form]
   (string/format "%q" (util/bracketify form)))
 
@@ -122,13 +124,76 @@
           (++ i)
           sym)))
       (walk recur node)))
-  (recur (util/stabilize form)))
+  [(recur (util/stabilize form))])
+
+(def- backticks (peg/compile ~(any (+ (<- (some "`")) 1))))
+
+(defn- indent [str col]
+  (def col (- col 1))
+  (def lines (string/split "\n" str))
+  (def indent (string/repeat " " (+ col 2)))
+  (def last? |(= $ (- (length lines) 1)))
+  (def indented (seq [[i line] :pairs lines]
+    (if (and (last? i) (empty? line))
+      (string (string/repeat " " col) line)
+      (string indent line))))
+  (string/join indented "\n"))
+
+(defn- backtick-quote [str col]
+  (def most-backticks
+    (reduce |(max $0 (length $1)) 0 (peg/match backticks str)))
+  (def delimiter (string/repeat "`" (+ 1 most-backticks)))
+  (string
+    delimiter
+    "\n"
+    str
+    (if (= col 1) "\n")
+    #(string/repeat " " (- col 1))
+    delimiter))
+
+(defn- stdout-printer [col]
+  (fn [form &opt output]
+    (def [form output] (if (nil? output) [nil form] [form output]))
+    (def output (backtick-quote output col))
+    (if (nil? form)
+      output
+      (string/format "%s %s" (normal-printer form) output))))
+
+(defn- ensure-trailing-newline [str]
+  (if (string/has-suffix? "\n" str)
+    str
+    (string str "\n")))
+
+(defn- remove-trailing-newline [str]
+  (if (string/has-suffix? "\n" str)
+    (string/slice str 0 (- (length str) 1))
+    str))
+
+(defn- stdout-stabilize [col]
+  (fn [[result output]]
+    (def indented (indent (ensure-trailing-newline output) col))
+    # work around a horrible quirk of the janet parser
+    (def normalized
+      (if (= col 1)
+        (remove-trailing-newline indented)
+        indented))
+    (if result
+      [(util/stabilize result) normalized]
+      [normalized])))
 
 (defmacro test-error [<expr> & <expected>]
-  (test* (util/get-error <expr>) <expected> util/stabilize normal-printer))
+  (test* (util/get-error <expr>) <expected> normal-stabilize normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
   (test* ~(,macex1 ',<expr>) <expected> macro-stabilize macro-printer))
 
+(defmacro test-stdout [<expr> & <expected>]
+  (def col (in (tuple/sourcemap (dyn *macro-form*)) 1))
+  (def <expr> (with-syms [$buf]
+    ~(let [,$buf @""]
+      (with-dyns [',*out* ,$buf]
+        [,<expr> ,$buf]))))
+  (test* <expr> <expected> (stdout-stabilize col) (stdout-printer col)))
+
 (defmacro test [<expr> & <expected>]
-  (test* <expr> <expected> util/stabilize normal-printer))
+  (test* <expr> <expected> normal-stabilize normal-printer))

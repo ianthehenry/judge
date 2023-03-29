@@ -31,9 +31,9 @@ results)
     (truthy? err) (let [[err fib] err] [err nil])
     (empty? actual) ["did not reach expectation" nil]
     (not (util/deep-same? actual)) ["inconsistent results" nil]
-    (let [actual (stabilizer (first actual))]
-      (unless (deep= [actual] expected)
-        [nil [(tuple/sourcemap form) (printer actual)]]))))
+    (let [stabilized (stabilizer (first actual))]
+      (unless (deep= stabilized expected)
+        [nil [(tuple/sourcemap form) (printer ;stabilized)]]))))
 
 (defn safely-accept-corrections [corrected-filename original-filename {:source source}]
   (def current-file-contents (slurp original-filename))
