@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.0.0"}
+     :tag "v2.1.0"}
   ])
 ```
 
@@ -167,13 +167,17 @@ Due to ambiguity in the Janet parser for multi-line strings, a trailing newline 
 `test-macro` is just like `test`ing the result of a `macex1` expression, but it prints with slightly nicer output:
 
 ```janet
-(test-macro (let [x 1] x) (do (def x 1) x))
+(test-macro (let [x 1] x)
+  (do
+    (def x 1)
+    x))
 ```
 
 And `test-macro` will replace `gensym`'d identifiers with stable symbols:
 
 ```janet
-(test-macro (and x (+ 1 2)) (if (def <1> x) (+ 1 2) <1>))
+(test-macro (and x (+ 1 2))
+  (if (def <1> x) (+ 1 2) <1>))
 ```
 
 ## `deftest`
@@ -248,7 +252,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## (upcoming) v2.1.0 2023-??-??
+## v2.1.0 2023-03-28
 
 - Added `test-stdout`
 - `test-macro` now pretty-prints the expansion
