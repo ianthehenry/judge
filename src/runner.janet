@@ -65,6 +65,12 @@ results)
     name
     (format-pos (test :file) (test :pos))))
 
+(defn- prefix-lines [prefix str]
+  (->
+    (seq [line :in (string/split "\n" str)]
+      (string prefix line))
+    (string/join "\n")))
+
 (def ctx-proto
   @{:on-test-error (fn [self err fib]
       (eprint (colorize/fg :red "test raised:"))
@@ -102,11 +108,11 @@ results)
         (unless replacement
           (eprint (colorize/fg :red err)))
         # TODO: this should actually work with multi-line forms
-        (eprint (colorize/fg :red "- " current-form))
+        (eprint (colorize/fg :red (prefix-lines "- " current-form)))
         (when replacement
           (def new-form
             (rewriter/rewrite-form current-form [1 1] (in replacement 1)))
-          (eprint (colorize/fg :green "+ " new-form))
+          (eprint (colorize/fg :green (prefix-lines "+ " new-form)))
           (:add-replacement self test replacement))
         (break :error))
       :ok)

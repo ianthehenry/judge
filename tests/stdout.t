@@ -11,8 +11,8 @@ test-stdout:
   ! running test: $PWD/script.janet:2:1
   ! <red>- (test-stdout (print "hi"))</>
   ! <grn>+ (test-stdout (print "hi") `
-  !   hi
-  ! `)</>
+  ! +   hi
+  ! + `)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
@@ -37,8 +37,8 @@ test-stdout includes value if it's not nil:
   ! running test: $PWD/script.janet:2:1
   ! <red>- (test-stdout (do (print "hi") 1))</>
   ! <grn>+ (test-stdout (do (print "hi") 1) 1 `
-  !   hi
-  ! `)</>
+  ! +   hi
+  ! + `)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
@@ -63,8 +63,8 @@ test-stdout indents output correctly:
   ! running test: indentation test
   ! <red>- (test-stdout (do (print "hi") 1))</>
   ! <grn>+ (test-stdout (do (print "hi") 1) 1 `
-  !     hi
-  !   `)</>
+  ! +     hi
+  ! +   `)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
@@ -95,15 +95,15 @@ Trailing newline is always added, due to craziness of the Janet backtick string 
   ! running test: indentation test
   ! <red>- (test-stdout (greet))</>
   ! <grn>+ (test-stdout (greet) `
-  !     hi
-  !     bye
-  !   `)</>
+  ! +     hi
+  ! +     bye
+  ! +   `)</>
   ! running test: $PWD/script.janet:7:1
   ! <red>- (test-stdout (greet))</>
   ! <grn>+ (test-stdout (greet) `
-  !   hi
-  !   bye
-  ! `)</>
+  ! +   hi
+  ! +   bye
+  ! + `)</>
   ! 0 passed 2 failed 0 skipped 0 unreachable
   [1]
 
@@ -139,9 +139,9 @@ Quotes with a sufficient number of backticks:
   ! running test: indentation test
   ! <red>- (test-stdout (do (print "``hi`") (prin "b````ye")))</>
   ! <grn>+ (test-stdout (do (print "``hi`") (prin "b````ye")) `````
-  !     ``hi`
-  !     b````ye
-  !   `````)</>
+  ! +     ``hi`
+  ! +     b````ye
+  ! +   `````)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
