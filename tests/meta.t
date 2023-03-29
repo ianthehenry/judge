@@ -35,6 +35,7 @@ Installed files:
   |   |   `-- util.janet
   |   `-- judge
   |       |-- colorize.janet
+  |       |-- fmt.janet
   |       |-- init.janet
   |       |-- rewriter.janet
   |       |-- runner.janet
@@ -42,4 +43,4 @@ Installed files:
   |       `-- util.janet
   `-- man
   
-  5 directories, 13 files
+  5 directories, 14 files

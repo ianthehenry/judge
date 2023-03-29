@@ -1,5 +1,6 @@
 (use ./shared)
 (import ./util)
+(import ./fmt)
 
 (def- *current-test* (gensym))
 
@@ -104,8 +105,11 @@
 (defn- normal-printer [form]
   (string/format "%q" (util/bracketify form)))
 
-(defn- macro-printer [form]
-  (string/format "%q" form))
+(defn- macro-printer [col] (fn [form]
+  (def buf @"\n")
+  (with-dyns [*out* buf]
+    (fmt/prindent form (+ col 1)))
+  buf))
 
 (defn- gensymbly? [sym]
   (and
@@ -185,7 +189,8 @@
   (test* (util/get-error <expr>) <expected> normal-stabilize normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
-  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize macro-printer))
+  (def col (in (tuple/sourcemap (dyn *macro-form*)) 1))
+  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize (macro-printer col)))
 
 (defmacro test-stdout [<expr> & <expected>]
   (def col (in (tuple/sourcemap (dyn *macro-form*)) 1))

@@ -13,6 +13,7 @@
 (declare-source
   :prefix "judge"
   :source [
+    "src/fmt.janet"
     "src/shared.janet"
     "src/colorize.janet"
     "src/init.janet"
