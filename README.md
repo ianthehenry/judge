@@ -251,6 +251,8 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 ## (upcoming) v2.1.0 2023-??-??
 
 - Added `test-stdout`
+- `test-macro` now pretty-prints the expansion
+- Judge diff output now looks nice for multi-line corrections
 
 ## v2.0.0 2023-03-27
 
