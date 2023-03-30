@@ -151,7 +151,6 @@
     "\n"
     str
     (if (= col 1) "\n")
-    #(string/repeat " " (- col 1))
     delimiter))
 
 (defn- stdout-printer [col]
