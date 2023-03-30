@@ -1,6 +1,7 @@
 set -uo pipefail
 DEFAULT_FILE=script.janet
 root=$(dirname $TESTDIR)
+HERE=$PWD
 
 if [[ ! -e jpm_tree/ ]]; then
   rsync -a "$root/jpm_tree/" jpm_tree/
@@ -61,7 +62,7 @@ sanitize() {
 }
 
 judge() {
-  (jpm_tree/bin/judge "$@" 3>&1 1>&2 2>&3 3>&- \
+  ($HERE/jpm_tree/bin/judge "$@" 3>&1 1>&2 2>&3 3>&- \
     | sed -e 's/^/! /') 2>&1 \
   | sanitize
 }

@@ -212,7 +212,8 @@ results)
   (put root-env *global-test-context* ctx)
 
   (each file found-files
-    (require (string "/" (util/chop-ext file))))
+    (def prefix (if (string/has-prefix? "/" file) "@" "/"))
+    (require (string prefix (util/chop-ext file))))
 
   (var teardown-failure false)
   (eachp [{:teardown teardown :name name} state] (ctx :states)

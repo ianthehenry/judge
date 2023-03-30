@@ -252,6 +252,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## vNext ????-??-??
+
+- You can now import files by absolute path. However, doing so will cause problems if you mix them with file-relative imports, as absolute and relative paths have different entries in the Janet module cache.
+
 ## v2.2.1 2023-03-30
 
 - The Judge test runner now imports files with relative paths instead of absolute paths. This gives better test output, and fixes a bug where a module could be loaded multiple times if a source file used cwd-relative imports.
