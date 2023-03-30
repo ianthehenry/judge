@@ -1,20 +1,25 @@
   $ source $TESTDIR/scaffold
 
-Functions become strings:
+Named functions and cfunctions become `@`-prefixed symbols:
 
   $ use <<EOF
   > (use judge)
   > (test pos?)
+  > (test int?)
   > EOF
   $ judge -a
   ! running test: $PWD/script.janet:2:1
   ! <red>- (test pos?)</>
-  ! <grn>+ (test pos? "<function pos?>")</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <grn>+ (test pos? @pos?)</>
+  ! running test: $PWD/script.janet:3:1
+  ! <red>- (test int?)</>
+  ! <grn>+ (test int? @int?)</>
+  ! 0 passed 2 failed 0 skipped 0 unreachable
   [1]
   $ judge
   ! running test: $PWD/script.janet:2:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! running test: $PWD/script.janet:3:1
+  ! 2 passed 0 failed 0 skipped 0 unreachable
 
 Pointers are replaced with unique strings:
 

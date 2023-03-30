@@ -45,10 +45,22 @@
   (def uniquify (fn [str]
     (get-or-put hex-cache str
       (let [x (string/format " 0x%d>" i)] (++ i) x))))
+  (defn to-stable-string [node]
+    (peg-replace ~(* " 0x" :h+ ">") uniquify (string node)))
+  (defn stable-function [name] (symbol "@" name))
   (defn recur [node]
     (cond
-      (or (function? node) (cfunction? node) (abstract? node))
-        (peg-replace ~(* " 0x" :h+ ">") uniquify (string node))
+      (abstract? node) (to-stable-string node)
+      (cfunction? node)
+        # there's no programmatic way to get the
+        # name of a cfunction
+        (if-let [sym (in make-image-dict node)]
+          (stable-function sym)
+          (to-stable-string node))
+      (function? node)
+        (if-let [name (disasm node :name)]
+          (stable-function name)
+          (to-stable-string node))
       (walk recur node)))
   (recur node))
 

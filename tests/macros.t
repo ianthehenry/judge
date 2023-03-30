@@ -37,11 +37,11 @@ test-macro simplifies gensyms:
   ! <grn>+ (test-macro (each x x) 
   ! +   (do
   ! +     (def <1> x)
-  ! +     (var <2> ("<function next>" <1> nil))
+  ! +     (var <2> (@next <1> nil))
   ! +     (while
-  ! +       ("<function not=>" nil <2>)
-  ! +       (def x ("<function in>" <1> <2>))
-  ! +       (set <2> ("<function next>" <1> <2>)))))</>
+  ! +       (@not= nil <2>)
+  ! +       (def x (@in <1> <2>))
+  ! +       (set <2> (@next <1> <2>)))))</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
@@ -50,11 +50,11 @@ test-macro simplifies gensyms:
   (test-macro (each x x) 
     (do
       (def <1> x)
-      (var <2> ("<function next>" <1> nil))
+      (var <2> (@next <1> nil))
       (while
-        ("<function not=>" nil <2>)
-        (def x ("<function in>" <1> <2>))
-        (set <2> ("<function next>" <1> <2>)))))
+        (@not= nil <2>)
+        (def x (@in <1> <2>))
+        (set <2> (@next <1> <2>)))))
 
   $ mv script.janet{.tested,}
   $ judge script.janet
