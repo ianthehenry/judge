@@ -8,7 +8,7 @@ test-macro:
   > EOF
 
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test-macro (let [x 1] x))</>
   ! <grn>+ (test-macro (let [x 1] x) 
   ! +   (do
@@ -32,7 +32,7 @@ test-macro simplifies gensyms:
   > EOF
 
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test-macro (each x x))</>
   ! <grn>+ (test-macro (each x x) 
   ! +   (do
@@ -58,7 +58,7 @@ test-macro simplifies gensyms:
 
   $ mv script.janet{.tested,}
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 Macros that raise are gracefully handled:
@@ -70,7 +70,7 @@ Macros that raise are gracefully handled:
   > EOF
 
   $ judge script.janet
-  ! running test: $PWD/script.janet:3:1
+  ! running test: script.janet:3:1
   ! <red>oh no</>
   ! <red>- (test-macro (oh-no))</>
   ! 0 passed 1 failed 0 skipped 0 unreachable

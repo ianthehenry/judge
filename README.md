@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.2.0"}
+     :tag "v2.2.1"}
   ])
 ```
 
@@ -251,6 +251,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.2.1 2023-03-30
+
+- The Judge test runner now imports files with relative paths instead of absolute paths. This gives better test output, and fixes a bug where a module could be loaded multiple times if a source file used cwd-relative imports.
 
 ## v2.2.0 2023-03-29
 

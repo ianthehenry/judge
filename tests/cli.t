@@ -123,17 +123,17 @@ Will run hidden files or folders by explicit request:
 
   $ judge .foo.janet
   hidden file
-  ! running test: $PWD/.foo.janet:3:1
+  ! running test: .foo.janet:3:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
   $ judge .hidden
   hello
-  ! running test: $PWD/.hidden/hello.janet:3:1
+  ! running test: .hidden/hello.janet:3:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
   $ judge .hidden/hello.janet
   hello
-  ! running test: $PWD/.hidden/hello.janet:3:1
+  ! running test: .hidden/hello.janet:3:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 Accepting refuses to run if file has been modified:
@@ -154,7 +154,7 @@ Accepting refuses to run if file has been modified:
   ! running test: test
   ! <red>- (test 1)</>
   ! <grn>+ (test 1 1)</>
-  ! <red>$PWD/test.janet changed since test runner began; refusing to overwrite</>
+  ! <red>test.janet changed since test runner began; refusing to overwrite</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
 
 Can be used as a jpm task:
@@ -169,5 +169,5 @@ Can be used as a jpm task:
   > EOF
 
   $ jpm test 2>&1 | sanitize
-  running test: $PWD/test.janet:2:1
+  running test: test.janet:2:1
   1 passed 0 failed 0 skipped 0 unreachable

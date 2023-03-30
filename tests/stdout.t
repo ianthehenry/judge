@@ -8,7 +8,7 @@ test-stdout:
   > EOF
 
   $ judge script.janet -a
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test-stdout (print "hi"))</>
   ! <grn>+ (test-stdout (print "hi") `
   ! +   hi
@@ -23,7 +23,7 @@ test-stdout:
   `)
 
   $ judge
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 test-stdout includes value if it's not nil:
@@ -34,7 +34,7 @@ test-stdout includes value if it's not nil:
   > EOF
 
   $ judge script.janet -a
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test-stdout (do (print "hi") 1))</>
   ! <grn>+ (test-stdout (do (print "hi") 1) `
   ! +   hi
@@ -48,7 +48,7 @@ test-stdout includes value if it's not nil:
     hi
   ` 1)
   $ judge
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 test-stdout indents output correctly:
@@ -98,7 +98,7 @@ Trailing newline is always added, due to craziness of the Janet backtick string 
   ! +     hi
   ! +     bye
   ! +   `)</>
-  ! running test: $PWD/script.janet:7:1
+  ! running test: script.janet:7:1
   ! <red>- (test-stdout (greet))</>
   ! <grn>+ (test-stdout (greet) `
   ! +   hi
@@ -124,7 +124,7 @@ Trailing newline is always added, due to craziness of the Janet backtick string 
 
   $ judge
   ! running test: indentation test
-  ! running test: $PWD/script.janet:10:1
+  ! running test: script.janet:10:1
   ! 2 passed 0 failed 0 skipped 0 unreachable
 
 Quotes with a sufficient number of backticks:

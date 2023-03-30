@@ -88,11 +88,6 @@
   (def leading (tuple/slice components 0 (- (length components) 1)))
   (string/join [;dir (string/join leading ".")] "/"))
 
-(defn to-abs [path]
-  (if (string/has-prefix? "/" path)
-    path
-    (string (os/cwd) "/" path)))
-
 (defn hidden? [path]
   (string/has-prefix? "." (basename path)))
 

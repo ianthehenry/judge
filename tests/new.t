@@ -105,7 +105,7 @@ Tests fails due to error (this should probably also patch!):
   ! running test: hello
   ! <red>test raised:</>
   ! error: oh no
-  !   in <anonymous> [$PWD/script.janet] on line 2, column 1
+  !   in <anonymous> [script.janet] on line 2, column 1
   ! <red>- (test (+ 1 2) 0)</>
   ! <grn>+ (test (+ 1 2) 3)</>
   ! <red>did not reach expectation</>
@@ -235,10 +235,10 @@ Top-level test:
   > (test (+ 1 2) 0)
   > EOF
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test (+ 1 2))</>
   ! <grn>+ (test (+ 1 2) 3)</>
-  ! running test: $PWD/script.janet:3:1
+  ! running test: script.janet:3:1
   ! <red>- (test (+ 1 2) 0)</>
   ! <grn>+ (test (+ 1 2) 3)</>
   ! 0 passed 2 failed 0 skipped 0 unreachable
@@ -258,7 +258,7 @@ test-error:
   >   (test-error (+ 1 2) 0))
   > EOF
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test-error (error "hello"))</>
   ! <grn>+ (test-error (error "hello") "hello")</>
   ! running test: okay
@@ -283,8 +283,8 @@ Tests run as soon as they're encountered:
   > (test x 1)
   > EOF
   $ judge script.janet
-  ! running test: $PWD/script.janet:3:1
-  ! running test: $PWD/script.janet:5:1
+  ! running test: script.janet:3:1
+  ! running test: script.janet:5:1
   ! 2 passed 0 failed 0 skipped 0 unreachable
 
 Multiple expectations:
@@ -294,7 +294,7 @@ Multiple expectations:
   > (test 0 0 1 2)
   > EOF
   $ judge script.janet
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! <red>- (test 0 0 1 2)</>
   ! <grn>+ (test 0 0)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable

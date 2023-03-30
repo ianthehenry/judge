@@ -187,13 +187,8 @@ results)
     (eprintf "error: %s" err)
     (os/exit 1))
 
-  # TODO: we'll actually get better stack traces if we run these
-  # with relative paths, not absolute paths. But I can't figure
-  # out how to dynamically require files with relative paths.
-  (def found-files (map util/to-abs found-files))
-
   (def pos-selectors (seq [[mode file line col] :in targets :when (= mode :just)]
-    [:pos (util/to-abs file) [line col]]))
+    [:pos file [line col]]))
 
   (def includes
     (array/concat
@@ -217,7 +212,7 @@ results)
   (put root-env *global-test-context* ctx)
 
   (each file found-files
-    (require (string "@" (util/chop-ext file))))
+    (require (string "/" (util/chop-ext file))))
 
   (var teardown-failure false)
   (eachp [{:teardown teardown :name name} state] (ctx :states)

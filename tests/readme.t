@@ -18,7 +18,7 @@
   > EOF
 
   $ judge
-  ! running test: $PWD/script.janet:14:1
+  ! running test: script.janet:14:1
   ! <red>- (test (slow-sort [3 1 4 2]))</>
   ! <grn>+ (test (slow-sort [3 1 4 2]) [1 2 3 4])</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
@@ -31,7 +31,7 @@ test-error:
   > (test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")
   > EOF
   $ judge
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 test-macro:
@@ -41,7 +41,7 @@ test-macro:
   > (test-macro (let [x 1] x) (do (def x 1) x))
   > EOF
   $ judge
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
 
 test-macro gensyms:
@@ -51,5 +51,5 @@ test-macro gensyms:
   > (test-macro (and x (+ 1 2)) (if (def <1> x) (+ 1 2) <1>))
   > EOF
   $ judge
-  ! running test: $PWD/script.janet:2:1
+  ! running test: script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
