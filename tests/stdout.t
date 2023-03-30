@@ -36,17 +36,17 @@ test-stdout includes value if it's not nil:
   $ judge script.janet -a
   ! running test: $PWD/script.janet:2:1
   ! <red>- (test-stdout (do (print "hi") 1))</>
-  ! <grn>+ (test-stdout (do (print "hi") 1) 1 `
+  ! <grn>+ (test-stdout (do (print "hi") 1) `
   ! +   hi
-  ! + `)</>
+  ! + ` 1)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
   $ cat script.janet
   (use judge)
-  (test-stdout (do (print "hi") 1) 1 `
+  (test-stdout (do (print "hi") 1) `
     hi
-  `)
+  ` 1)
   $ judge
   ! running test: $PWD/script.janet:2:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
@@ -62,18 +62,18 @@ test-stdout indents output correctly:
   $ judge script.janet -a
   ! running test: indentation test
   ! <red>- (test-stdout (do (print "hi") 1))</>
-  ! <grn>+ (test-stdout (do (print "hi") 1) 1 `
+  ! <grn>+ (test-stdout (do (print "hi") 1) `
   ! +     hi
-  ! +   `)</>
+  ! +   ` 1)</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
 
   $ cat script.janet
   (use judge)
   (deftest "indentation test"
-    (test-stdout (do (print "hi") 1) 1 `
+    (test-stdout (do (print "hi") 1) `
       hi
-    `))
+    ` 1))
 
   $ judge
   ! running test: indentation test

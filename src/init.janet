@@ -155,12 +155,11 @@
     delimiter))
 
 (defn- stdout-printer [col]
-  (fn [form &opt output]
-    (def [form output] (if (nil? output) [nil form] [form output]))
+  (fn [output &opt form]
     (def output (backtick-quote output col))
     (if (nil? form)
       output
-      (string/format "%s %s" (normal-printer form) output))))
+      (string/format "%s %s" output (normal-printer form)))))
 
 (defn- ensure-trailing-newline [str]
   (if (string/has-suffix? "\n" str)
@@ -173,7 +172,7 @@
     str))
 
 (defn- stdout-stabilize [col]
-  (fn [[result output]]
+  (fn [[output result]]
     (def indented (indent (ensure-trailing-newline output) col))
     # work around a horrible quirk of the janet parser
     (def normalized
@@ -181,7 +180,7 @@
         (remove-trailing-newline indented)
         indented))
     (if result
-      [(util/stabilize result) normalized]
+      [normalized (util/stabilize result)]
       [normalized])))
 
 (defmacro test-error [<expr> & <expected>]
@@ -196,7 +195,7 @@
   (def <expr> (with-syms [$buf]
     ~(let [,$buf @""]
       (with-dyns [',*out* ,$buf]
-        [,<expr> ,$buf]))))
+        [,$buf ,<expr>]))))
   (test* <expr> <expected> (stdout-stabilize col) (stdout-printer col)))
 
 (defmacro test [<expr> & <expected>]
