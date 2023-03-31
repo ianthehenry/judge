@@ -23,7 +23,7 @@ When you run Judge, it will replace the source code with the result of this expr
 (test (+ 1 1) 2)
 ```
 
-The Judge test runner gives you a lot flexibility over where you structure your tests. You *can* put all your tests in a `test/` subdirectory, following standard Janet convention, or you can put tests right next to the code that you're testing:
+The Judge test runner gives you a lot flexibility over how you structure your tests. You *can* put all your tests in a `test/` subdirectory, following standard Janet convention, or you can put tests right next to the code that you're testing:
 
 ```janet
 # sort.janet
