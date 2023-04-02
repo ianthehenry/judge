@@ -35,10 +35,16 @@ results)
       (unless (deep= stabilized expected)
         [nil [(tuple/sourcemap form) (printer ;stabilized)]]))))
 
-(defn safely-accept-corrections [corrected-filename original-filename {:source source}]
+(defn safely-accept-corrections
+  [{:corrected-filename corrected-filename
+    :original-filename original-filename
+    :file-permissions file-permissions
+    :file-cache-entry {:source source}}]
   (def current-file-contents (slurp original-filename))
   (if (deep= current-file-contents source)
-    (os/rename corrected-filename original-filename)
+    (do
+      (os/chmod corrected-filename file-permissions)
+      (os/rename corrected-filename original-filename))
     (eprint
       (colorize/fgf :red "%s changed since test runner began; refusing to overwrite"
         original-filename))))
@@ -49,11 +55,17 @@ results)
     (if (empty? replacements)
       (util/rm-p corrected-file)
       (do
+        (def file-permissions
+          (os/perm-string (os/stat file :int-permissions)))
         (def file-cache-entry (in file-cache file))
         (spit corrected-file
           (rewriter/rewrite-forms file-cache-entry replacements))
         (when accept
-          (safely-accept-corrections corrected-file file file-cache-entry))
+          (safely-accept-corrections
+            {:corrected-filename corrected-file
+             :original-filename file
+             :file-permissions file-permissions
+             :file-cache-entry file-cache-entry}))
         ))))
 
 # TODO: should render these relative to the current working directory
