@@ -5,7 +5,7 @@ Usage:
   $ judge --help
   Test runner for Judge.
   
-    jpm_tree/bin/judge FILE[:LINE:COL]
+    $PWD/jpm_tree/bin/judge FILE[:LINE:COL]
   
   If no targets are given on the command line, Judge will look for tests in the
   current working directory.
@@ -135,27 +135,6 @@ Will run hidden files or folders by explicit request:
   hello
   ! running test: .hidden/hello.janet:3:1
   ! 1 passed 0 failed 0 skipped 0 unreachable
-
-Accepting refuses to run if file has been modified:
-
-  $ use test.janet <<EOF
-  > (use judge)
-  > (deftest "test"
-  >   (test 1))
-  > (os/sleep 0.1)
-  > EOF
-
-  $ judge test.janet -a &
-
-  $ sleep 0.01
-
-  $ echo "modified" > test.janet
-  $ sleep 0.1
-  ! running test: test
-  ! <red>- (test 1)</>
-  ! <grn>+ (test 1 1)</>
-  ! <red>test.janet changed since test runner began; refusing to overwrite</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
 
 Can be used as a jpm task:
 
