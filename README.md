@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.2.1"}
+     :tag "v2.2.2"}
   ])
 ```
 
@@ -252,8 +252,9 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## vNext ????-??-??
+## v2.2.2 2023-04-02
 
+- `judge --accept` no longer resets file permissions when it overwrites the original source file
 - You can now import files by absolute path. However, doing so will cause problems if you mix them with file-relative imports, as absolute and relative paths have different entries in the Janet module cache.
 
 ## v2.2.1 2023-03-30
