@@ -36,10 +36,9 @@ results)
         [nil [(tuple/sourcemap form) (printer ;stabilized)]]))))
 
 (defn safely-accept-corrections
-  [{:corrected-filename corrected-filename
-    :original-filename original-filename
-    :file-permissions file-permissions
-    :file-cache-entry {:source source}}]
+  [&named corrected-filename original-filename
+          file-permissions file-cache-entry]
+  (def {:source source} file-cache-entry)
   (def current-file-contents (slurp original-filename))
   (if (deep= current-file-contents source)
     (do
@@ -62,10 +61,10 @@ results)
           (rewriter/rewrite-forms file-cache-entry replacements))
         (when accept
           (safely-accept-corrections
-            {:corrected-filename corrected-file
-             :original-filename file
-             :file-permissions file-permissions
-             :file-cache-entry file-cache-entry}))
+            :corrected-filename corrected-file
+            :original-filename file
+            :file-permissions file-permissions
+            :file-cache-entry file-cache-entry))
         ))))
 
 # TODO: should render these relative to the current working directory
