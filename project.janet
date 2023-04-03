@@ -7,7 +7,7 @@
   :repo "git+https://github.com/ianthehenry/judge"
   :dependencies [
     {:url "https://github.com/ianthehenry/cmd"
-     :tag "v1.0.1"}
+     :tag "v1.0.2"}
   ])
 
 (declare-source

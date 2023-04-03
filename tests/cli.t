@@ -5,7 +5,7 @@ Usage:
   $ judge --help
   Test runner for Judge.
   
-    $PWD/jpm_tree/bin/judge FILE[:LINE:COL]
+    judge [FILE[:LINE:COL]]...
   
   If no targets are given on the command line, Judge will look for tests in the
   current working directory.
