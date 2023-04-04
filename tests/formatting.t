@@ -67,3 +67,29 @@ Distinguishes mutable and immutable types:
   ! <grn>+ (test @{:a 1} @{:a 1})</>
   ! 0 passed 4 failed 0 skipped 0 unreachable
   [1]
+
+Tuples render with brackets:
+
+  $ use <<EOF
+  > (use judge)
+  > (test [1 2 3])
+  > EOF
+  $ judge
+  ! running test: script.janet:2:1
+  ! <red>- (test [1 2 3])</>
+  ! <grn>+ (test [1 2 3] [1 2 3])</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]
+
+Nested tuples still render with brackets:
+
+  $ use <<EOF
+  > (use judge)
+  > (test [1 [2] 3])
+  > EOF
+  $ judge
+  ! running test: script.janet:2:1
+  ! <red>- (test [1 [2] 3])</>
+  ! <grn>+ (test [1 [2] 3] [1 [2] 3])</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]

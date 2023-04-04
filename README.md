@@ -255,6 +255,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 ## next
 
 - fixed a bug where `test-macro` failures would insert an extra newline
+- nested tuples now render with square brackets (not just top-level tuples)
 
 ## v2.2.2 2023-04-02
 
@@ -340,3 +341,4 @@ The biggest difference is that Judge now ships with a test runner script instead
 ## v0.1.0 2021-09-29
 
 Initial release of Judge. Motivation and design described in some detail [in this blog post](https://ianthehenry.com/posts/janet-game/judging-janet/).
+

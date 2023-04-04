@@ -66,7 +66,7 @@
 
 (defn bracketify [node]
   (if (tuple? node)
-    (tuple/brackets ;(walk stabilize node))
+    (tuple/brackets ;(walk (comp stabilize bracketify) node))
     (walk bracketify node)))
 
 (defn but-last [t]
