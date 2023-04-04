@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.2.2"}
+     :tag "v2.3.0"}
   ])
 ```
 
@@ -256,7 +256,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.3.0 2023-04-03
 
 - Added `--interactive` mode
 - Judge now prints the file name before running tests
