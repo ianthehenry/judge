@@ -33,7 +33,9 @@ results)
     (not (util/deep-same? actual)) ["inconsistent results" nil]
     (let [stabilized (stabilizer (first actual))]
       (unless (deep= stabilized expected)
-        [nil [(tuple/sourcemap form) (printer ;stabilized)]]))))
+        (def pos (tuple/sourcemap form))
+        (def [line col] pos)
+        [nil [pos (printer col ;stabilized)]]))))
 
 (defn safely-accept-corrections
   [&named corrected-filename original-filename
@@ -121,8 +123,9 @@ results)
         # TODO: this should actually work with multi-line forms
         (eprint (colorize/fg :red (prefix-lines "- " current-form)))
         (when replacement
+          (def [_ replacement-str] replacement)
           (def new-form
-            (rewriter/rewrite-form current-form [1 1] (in replacement 1)))
+            (rewriter/rewrite-form current-form [1 1] replacement-str))
           (eprint (colorize/fg :green (prefix-lines "+ " new-form)))
           (:add-replacement self test replacement))
         (break :error))

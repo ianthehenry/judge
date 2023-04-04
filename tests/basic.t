@@ -19,6 +19,25 @@ Fills in the blank:
   (deftest "test"
     (test (+ 1 2) 3))
 
+Very long values get their own lines:
+
+  $ use <<EOF
+  > (use judge)
+  > (deftest "test"
+  >   (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]))
+  > EOF
+  $ judge
+  ! running test: test
+  ! <red>- (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
+  ! <grn>+ (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]
+
+  $ show_tested
+  (use judge)
+  (deftest "test"
+    (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]))
+
 Preserves formatting before result:
 
   $ use <<EOF
@@ -36,7 +55,7 @@ Preserves formatting before result:
     (test (+ 1
        2) 3))
 
-Preserves position of result:
+Does not preserves position of failing result:
 
   $ use <<EOF
   > (use judge)
@@ -52,8 +71,7 @@ Preserves position of result:
   (use judge)
   (deftest "test"
     (test [1
-          2]
-        [1 2]))
+          2] [1 2]))
 
 Does not preserve formatting of incorrect result:
 
@@ -72,8 +90,7 @@ Does not preserve formatting of incorrect result:
   (use judge)
   (deftest "test"
     (test [1
-          2]
-        [1 2]))
+          2] [1 2]))
 
 Does not re-format correct results:
 

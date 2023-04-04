@@ -10,7 +10,7 @@ test-macro:
   $ judge script.janet
   ! running test: script.janet:2:1
   ! <red>- (test-macro (let [x 1] x))</>
-  ! <grn>+ (test-macro (let [x 1] x) 
+  ! <grn>+ (test-macro (let [x 1] x)
   ! +   (do
   ! +     (def x 1)
   ! +     x))</>
@@ -19,7 +19,7 @@ test-macro:
 
   $ cat script.janet.tested
   (use judge)
-  (test-macro (let [x 1] x) 
+  (test-macro (let [x 1] x)
     (do
       (def x 1)
       x))
@@ -34,7 +34,7 @@ test-macro simplifies gensyms:
   $ judge script.janet
   ! running test: script.janet:2:1
   ! <red>- (test-macro (each x x))</>
-  ! <grn>+ (test-macro (each x x) 
+  ! <grn>+ (test-macro (each x x)
   ! +   (do
   ! +     (def <1> x)
   ! +     (var <2> (@next <1> nil))
@@ -47,7 +47,7 @@ test-macro simplifies gensyms:
 
   $ cat script.janet.tested
   (use judge)
-  (test-macro (each x x) 
+  (test-macro (each x x)
     (do
       (def <1> x)
       (var <2> (@next <1> nil))
@@ -75,3 +75,86 @@ Macros that raise are gracefully handled:
   ! <red>- (test-macro (oh-no))</>
   ! 0 passed 1 failed 0 skipped 0 unreachable
   [1]
+
+Macros with incorrect expansions do not insert extra newlines:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro foo [] ~(do (print "one") (print "two")))
+  > (test-macro (foo)
+  >   (do
+  >     (print "two")
+  >     (print "one")))
+  > EOF
+
+  $ judge script.janet -a
+  ! running test: script.janet:3:1
+  ! <red>- (test-macro (foo)
+  ! -   (do
+  ! -     (print "two")
+  ! -     (print "one")))</>
+  ! <grn>+ (test-macro (foo)
+  ! +   (do
+  ! +     (print "one")
+  ! +     (print "two")))</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]
+
+  $ cat script.janet
+  (use judge)
+  (defmacro foo [] ~(do (print "one") (print "two")))
+  (test-macro (foo)
+    (do
+      (print "one")
+      (print "two")))
+
+Macros with crazy formatting do not keep crazy formatting after correction:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro foo [] ~(do (print "one") (print "two")))
+  > (test-macro (foo) (do      
+  > (print "two")
+  >         (print "one")))
+  > EOF
+
+  $ judge script.janet -a
+  ! running test: script.janet:3:1
+  ! <red>- (test-macro (foo) (do      
+  ! - (print "two")
+  ! -         (print "one")))</>
+  ! <grn>+ (test-macro (foo)
+  ! +   (do
+  ! +     (print "one")
+  ! +     (print "two")))</>
+  ! 0 passed 1 failed 0 skipped 0 unreachable
+  [1]
+
+  $ cat script.janet
+  (use judge)
+  (defmacro foo [] ~(do (print "one") (print "two")))
+  (test-macro (foo)
+    (do
+      (print "one")
+      (print "two")))
+
+Correct macros can keep whatever crazy formatting they want:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro foo [] ~(do (print "one") (print "two")))
+  > (test-macro (foo) (do      
+  > (print "one")
+  >         (print "two")))
+  > EOF
+
+  $ judge script.janet -a
+  ! running test: script.janet:3:1
+  ! 1 passed 0 failed 0 skipped 0 unreachable
+
+  $ cat script.janet
+  (use judge)
+  (defmacro foo [] ~(do (print "one") (print "two")))
+  (test-macro (foo) (do      
+  (print "one")
+          (print "two")))

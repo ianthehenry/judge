@@ -102,14 +102,14 @@
 
 (defn- normal-stabilize [node] [(util/stabilize node)])
 
-(defn- normal-printer [form]
+(defn- normal-printer [col form]
   (string/format "%q" (util/bracketify form)))
 
-(defn- macro-printer [col] (fn [form]
+(defn- macro-printer [col form]
   (def buf @"\n")
   (with-dyns [*out* buf]
     (fmt/prindent form (+ col 1)))
-  buf))
+  buf)
 
 (defn- gensymbly? [sym]
   (and
@@ -153,12 +153,11 @@
     (if (= col 1) "\n")
     delimiter))
 
-(defn- stdout-printer [col]
-  (fn [output &opt form]
-    (def output (backtick-quote output col))
-    (if (nil? form)
-      output
-      (string/format "%s %s" output (normal-printer form)))))
+(defn- stdout-printer [col output &opt form]
+  (def output (backtick-quote output col))
+  (if (nil? form)
+    output
+    (string/format "%s %s" output (normal-printer col form))))
 
 (defn- ensure-trailing-newline [str]
   (if (string/has-suffix? "\n" str)
@@ -186,16 +185,15 @@
   (test* (util/get-error <expr>) <expected> normal-stabilize normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
-  (def col (in (tuple/sourcemap (dyn *macro-form*)) 1))
-  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize (macro-printer col)))
+  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize macro-printer))
 
 (defmacro test-stdout [<expr> & <expected>]
-  (def col (in (tuple/sourcemap (dyn *macro-form*)) 1))
+  (def [line col] (tuple/sourcemap (dyn *macro-form*)))
   (def <expr> (with-syms [$buf]
     ~(let [,$buf @""]
       (with-dyns [',*out* ,$buf]
         [,$buf ,<expr>]))))
-  (test* <expr> <expected> (stdout-stabilize col) (stdout-printer col)))
+  (test* <expr> <expected> (stdout-stabilize col) stdout-printer))
 
 (defmacro test [<expr> & <expected>]
   (test* <expr> <expected> normal-stabilize normal-printer))

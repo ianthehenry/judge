@@ -69,14 +69,11 @@
 
   (string/join components))
 
-(defn- char-at [x i]
-  (string/from-bytes (x i)))
-
 (defn- whitespace? [x]
-  (or (= x " ") (= x "\t") (= x "\n")))
+  (or (= x (chr " ")) (= x (chr "\t")) (= x (chr "\n"))))
 
 # returns an array of byte indices for the start of each
-# subform, in the coordinate space of the source input
+# subform, in the coordinate space of the source
 (defn components [source start-index form-length]
   (assert (>= form-length 2) "but where are the parentheses??")
   (def innards (util/slice-len source (+ start-index 1) (- form-length 2)))
@@ -86,10 +83,8 @@
   (parser/eof p)
   (def result @[])
   (while (parser/has-more p)
-    (array/push result
-      (+ start-index 1
-        (pos-to-byte-index lines
-          (tuple/sourcemap (parser/produce p true))))))
+    (def pos (tuple/sourcemap (parser/produce p true)))
+    (array/push result (+ start-index 1 (pos-to-byte-index lines pos))))
   result)
 
 (defn get-form [{:source source :lines lines} pos]
@@ -105,20 +100,22 @@
 
     (def components (components source start len))
     (def third-form-end (+ start len -1))
-    (def third-form-start
+    (var third-form-start
       (case (length components)
         0 (error "cannot patch")
         1 (errorf "cannot patch")
         2 third-form-end
         (in components 2)))
+    # trim all whitespace between forms 2 and 3...
+    (while (whitespace? (in source (- third-form-start 1)))
+      (-- third-form-start))
 
     (def third-form-len (- third-form-end third-form-start))
+    (def prefix (if (whitespace? (in replacement 0)) "" " "))
 
     [third-form-start
      third-form-len
-     (if (whitespace? (char-at source (- third-form-start 1)))
-      replacement
-      (string " " replacement))])))
+     (string prefix replacement)])))
 
 (defn rewrite-form [source pos replacement]
   (rewrite-forms {:source source :lines (string/split "\n" source)} [[pos replacement]]))

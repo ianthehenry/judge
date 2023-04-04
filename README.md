@@ -252,6 +252,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- fixed a bug where `test-macro` failures would insert an extra newline
+
 ## v2.2.2 2023-04-02
 
 - `judge --accept` no longer resets file permissions when it overwrites the original source file
