@@ -19,11 +19,13 @@ Shared state is reset between runs:
   >   (test (state :n) 0))
   > EOF
 
-  $ judge
+  $ judge -v
+  ! <dim># script.janet</>
   ! running test: initial state
   ! running test: state can be mutated
   ! running test: state is back to normal
-  ! 3 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 3 passed
 
 Tests don't run if something fails:
 
@@ -40,19 +42,25 @@ Tests don't run if something fails:
   > EOF
 
   $ judge
-  ! running test: test that will be skipped
-  ! <red>test raised:</>
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest: erroneous-setup "test that will be skipped" [_]
+  !   (error "unreachable"))
+  ! 
   ! error: failed to initialize context: oh no
   !   in <anonymous> [script.janet] on line 3, column 17
   !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 32, column 17
   !   in <anonymous> [script.janet] on line 5, column 1
-  ! running test: another test that will be skipped
-  ! <red>test raised:</>
+  ! 
+  ! (deftest: erroneous-setup "another test that will be skipped" [_]
+  !   (error "unreachable"))
+  ! 
   ! error: failed to initialize context: oh no
   !   in <anonymous> [script.janet] on line 3, column 17
   !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 32, column 17
   !   in <anonymous> [script.janet] on line 8, column 1
-  ! 0 passed 2 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed 2 failed
   [1]
 
 Something else:
@@ -76,19 +84,25 @@ No tests of this type can run after a reset failure:
 
   $ judge
   reset
-  ! running test: test not called because reset failed
-  ! <red>test raised:</>
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest: erroneous-reset "test not called because reset failed" [_]
+  !   (error "unreachable"))
+  ! 
   ! error: failed to initialize context: oh dear
   !   in <anonymous> [script.janet] on line 6, column 5
   !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 37, column 18
   !   in <anonymous> [script.janet] on line 8, column 1
-  ! running test: test not attempted
-  ! <red>test raised:</>
+  ! 
+  ! (deftest: erroneous-reset "test not attempted" [_]
+  !   (error "unreachable"))
+  ! 
   ! error: failed to initialize context: oh dear
   !   in <anonymous> [script.janet] on line 6, column 5
   !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 37, column 18
   !   in <anonymous> [script.janet] on line 11, column 1
-  ! 0 passed 2 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed 2 failed
   [1]
 
 Teardown failures are reported:
@@ -106,9 +120,10 @@ Teardown failures are reported:
   > EOF
 
   $ judge
-  ! running test: test
+  ! <dim># script.janet</>
   ! <red>failed to teardown erroneous-teardown test context</>
   ! error: oh no
   !   in <anonymous> [script.janet] (tailcall) on line 6, column 21
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 1 passed
   [1]

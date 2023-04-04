@@ -6,18 +6,20 @@ Accepting refuses to run if file has been modified:
   > (use judge)
   > (deftest "test"
   >   (test 1))
-  > (os/sleep 1)
   > EOF
 
-  $ judge test.janet -a &
-  $ sleep 0.5
-  $ echo "modified" > test.janet
-  $ sleep 1
-  ! running test: test
-  ! <red>- (test 1)</>
-  ! <grn>+ (test 1 1)</>
+  $ (sleep 0.5; echo "modified" > test.janet; echo y) | judge test.janet -i
+  ! <dim># test.janet</>
+  ! 
+  ! (deftest "test"
+  !   <red>(test 1)</>
+  !   <grn>(test 1 1)</>)
+  ! 
+  ! Verdict? <dim>ynaAdqQ?</> 
   ! <red>test.janet changed since test runner began; refusing to overwrite</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed 1 failed
+  [1]
 
 Accepting changes on a file preserves the permissions on that file:
 

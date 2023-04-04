@@ -8,7 +8,7 @@
 (defn- ignore [&] nil)
 
 (defn- make-test [ctx <name>]
-  (def pos (tuple/sourcemap (dyn :macro-form)))
+  (def pos (tuple/sourcemap (dyn *macro-form*)))
   (def file (dyn :current-file))
   # we create this now because the presence of an empty
   # list is significant -- it will cause us to delete the

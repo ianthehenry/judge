@@ -35,7 +35,7 @@ results)
       (unless (deep= stabilized expected)
         (def pos (tuple/sourcemap form))
         (def [line col] pos)
-        [nil [pos (printer col ;stabilized)]]))))
+        [nil (printer col ;stabilized)]))))
 
 (defn safely-accept-corrections
   [&named corrected-filename original-filename
@@ -84,52 +84,148 @@ results)
       (string prefix line))
     (string/join "\n")))
 
+(defn interactive-verdict []
+  (eprinf "\nVerdict? %s " (colorize/dim "ynaAdqQ?"))
+  (def char (let [line (file/read stdin :line)]
+    (if line
+      (if (= (length line) 2) (in line 0)))))
+  (eprint)
+  (case char
+    (chr "y") :stage
+    (chr "n") :skip
+    (chr "a") :stage-this-file
+    (chr "d") :skip-this-file
+    (chr "A") :stage-all-files
+    (chr "q") :quit
+    nil :quit
+    (chr "Q") :abort
+    (do
+      (eprint "y - patch this test")
+      (eprint "n - do not patch this test")
+      (eprint "a - patch this and all subsequent tests in this file")
+      (eprint "A - patch this and all subsequent tests in all files")
+      (eprint "d - don't patch this or any subsequent tests in this file")
+      (eprint "q - quit, patching any selected tests")
+      (eprint "Q - abort: exit immediately without patching any files")
+      (eprint "? - print help")
+      (interactive-verdict))))
+
 (def ctx-proto
-  @{:on-test-error (fn [self err fib]
-      (eprint (colorize/fg :red "test raised:"))
+  @{:on-test-error (fn [self test]
+      (def {:error [err fib]} test)
+      (eprint)
       (debug/stacktrace fib err ""))
 
     :on-test-start (fn [self test]
+      (when (not= (self :current-file) (test :file))
+        (when (self :needs-newline-before-file-header)
+          (eprint))
+        (eprint (colorize/dim "# " (test :file)))
+        (put self :needs-newline-before-file-header false)
+        (put self :current-file (test :file)))
       (put test :ran true)
-      (eprint "running test: " (name-of test)))
+      (when (self :verbose)
+        (eprint "running test: " (name-of test))))
 
     :on-test-end (fn [self test]
-      (def {:expectations expectations :file file} test)
+      (def {:expectations expectations :file file :pos pos} test)
+      (var failed (truthy? (test :error)))
 
-      (var failed false)
-      (match test
-        {:error [err fib]} (do
-          (:on-test-error self err fib)
-          (set failed true)))
+      (def file-cache-entry (in (self :file-cache) file))
 
+      (def [file-offset test-form] (rewriter/get-form file-cache-entry pos))
+      (def local-replacements @[])
+      (def replacement-candidates @[])
       (each expectation expectations
-        (case (:report-expectation self test expectation)
-          :error (set failed true)))
+        (when-let [[err replacement] (expectation-error expectation)]
+          (set failed true)
+          (def epos (tuple/sourcemap (expectation :form)))
+          (def [byte-index original-form] (rewriter/get-form file-cache-entry epos))
+          (array/push local-replacements [
+            (- byte-index file-offset)
+            (length original-form)
+            (if err
+              (string
+                 (colorize/fg :red "# " err)
+                 "\n"
+                 (string/repeat " " (- (in epos 1) 1))
+                 (colorize/fg :red original-form))
+               (let [corrected-form (rewriter/rewrite-form original-form [1 1] replacement)]
+                 (array/push replacement-candidates [epos replacement])
+                 (string
+                   (colorize/fg :red original-form)
+                   "\n"
+                   (string/repeat " " (- (in epos 1) 1))
+                   (colorize/fg :green corrected-form))))
+            ])))
 
       (if failed
         (++ (self :failed))
-        (++ (self :passed))))
+        (++ (self :passed)))
 
-    :add-replacement (fn [self test replacement]
-      (array/push (in (self :replacements) (test :file))
-        replacement))
+      (when failed
+        (put self :needs-newline-before-file-header true)
+        (eprint)
+        (eprint (rewriter/string-splice test-form local-replacements))
+        (unless (nil? (test :error))
+          (:on-test-error self test))
+        (unless (empty? replacement-candidates)
+          (defn stage [] (array/concat (in (self :replacements) file) replacement-candidates))
+          (case (:get-verdict self test)
+            :stage (stage)
+            :stage-this-file (do (stage) (put (self :auto-verdict) file :stage))
+            :skip-this-file (put (self :auto-verdict) file :skip)
+            :stage-all-files (do (stage) (put self :interactive false))
+            :skip nil
+            :quit (:quit-gracefully self true)
+            :abort (os/exit 1))
+            (assert "don't know how to handle that yet"))))
 
-    :report-expectation (fn [self test expectation]
-      (when-let [[err replacement] (expectation-error expectation)]
-        (def current-form (rewriter/get-form (in (self :file-cache) (test :file))
-          (tuple/sourcemap (expectation :form))))
-        (unless replacement
-          (eprint (colorize/fg :red err)))
-        # TODO: this should actually work with multi-line forms
-        (eprint (colorize/fg :red (prefix-lines "- " current-form)))
-        (when replacement
-          (def [_ replacement-str] replacement)
-          (def new-form
-            (rewriter/rewrite-form current-form [1 1] replacement-str))
-          (eprint (colorize/fg :green (prefix-lines "+ " new-form)))
-          (:add-replacement self test replacement))
-        (break :error))
-      :ok)
+    :get-verdict (fn [self test]
+      (if (self :interactive)
+        (if-let [verdict ((self :auto-verdict) (test :file))]
+          verdict
+          (interactive-verdict))
+        :stage))
+
+    :quit-gracefully (fn [self explicit-quit]
+      (def {:states states
+            :tests tests
+            :file-cache file-cache
+            :replacements replacements
+            :overwrite overwrite} self)
+      (var teardown-failure false)
+      (eachp [{:teardown teardown :name name} state] states
+        (match state
+          [:ok state]
+            (try (teardown state)
+              ([e fib]
+                (set teardown-failure true)
+                (eprint (colorize/fgf :red "failed to teardown %s test context" name))
+                (debug/stacktrace fib e "")))))
+
+      (var unreachable 0)
+      (unless explicit-quit
+        (loop [test :in tests :when (not (test :ran))]
+          (eprint (colorize/fg :red (name-of test) " did not run"))
+          (++ unreachable)))
+
+      (apply-replacements file-cache replacements overwrite)
+
+      (defn eprin-if [n text]
+        (if (> n 0)
+          (eprinf " %i %s" n text)))
+      (eprinf "\n%i passed" (self :passed))
+      (eprin-if (self :failed) "failed")
+      (eprin-if (self :skipped) "skipped")
+      (eprin-if unreachable "unreachable")
+      (eprint)
+
+      (if (or (> (+ unreachable (self :failed)) 0)
+              teardown-failure
+              (= (self :passed) 0))
+        (os/exit 1)
+        (os/exit 0)))
     })
 
 (defn matches [ctx test [predicate-type & predicate-args]]
@@ -187,7 +283,13 @@ results)
    [name-exact-selectors   --name-exact] (array arg/name)   "only run tests with this exact name"
    [name-prefix-filters      --not-name] (array arg/prefix) "skip tests whose name starts with this prefix"
    [name-exact-filters --not-name-exact] (array arg/name)   "skip tests whose name is exactly this prefix"
-   [--accept -a] (flag) "overwrite source files with .tested files"]
+   [--accept -a] (flag) "overwrite all source files with .tested files"
+   [--interactive -i] (flag) "select which replacements to include"
+   [--verbose -v] (flag) "verbose output"]
+
+  (when (and accept interactive)
+    (eprint "only one of --accept or --interactive allowed")
+    (os/exit 1))
 
   (def targets
     (if (empty? targets)
@@ -215,6 +317,12 @@ results)
       (map |[:name-prefix $] name-exact-filters)))
 
   (def ctx (new ctx-proto
+    :overwrite (or accept interactive)
+    :interactive interactive
+    :auto-verdict @{}
+    :current-file nil
+    :needs-newline-before-file-header false
+    :verbose verbose
     :tests @[]
     :passed 0
     :failed 0
@@ -229,27 +337,4 @@ results)
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))
     (require (string prefix (util/chop-ext file))))
 
-  (var teardown-failure false)
-  (eachp [{:teardown teardown :name name} state] (ctx :states)
-    (match state
-      [:ok state]
-        (try (teardown state)
-          ([e fib]
-            (set teardown-failure true)
-            (eprint (colorize/fgf :red "failed to teardown %s test context" name))
-            (debug/stacktrace fib e "")))))
-
-  (var unreachable 0)
-  (loop [test :in (ctx :tests) :when (not (test :ran))]
-    (eprint (colorize/fg :red (name-of test) " did not run"))
-    (++ unreachable))
-
-  (apply-replacements (ctx :file-cache) (ctx :replacements) accept)
-
-  (eprintf "%i passed %i failed %i skipped %i unreachable"
-    (ctx :passed) (ctx :failed) (ctx :skipped) unreachable)
-
-  (if (or (> (+ unreachable (ctx :failed)) 0)
-          teardown-failure
-          (= (ctx :passed) 0))
-    (os/exit 1)))
+  (:quit-gracefully ctx false))

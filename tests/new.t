@@ -9,22 +9,37 @@
 
   $ use tests/one.janet <<EOF
   > (use judge)
-  > (print "test one")
+  > (test 1)
   > EOF
 
   $ use tests/two.janet <<EOF
   > (use judge)
-  > (print "test two")
+  > (test 2)
   > EOF
 
 By default, Judge recursively finds all Janet files:
 
+  $ judge -a
+  hello
+  ! <dim># tests/one.janet</>
+  ! 
+  ! <red>(test 1)</>
+  ! <grn>(test 1 1)</>
+  ! 
+  ! <dim># tests/two.janet</>
+  ! 
+  ! <red>(test 2)</>
+  ! <grn>(test 2 2)</>
+  ! 
+  ! 0 passed 2 failed
+  [1]
+
   $ judge
   hello
-  test one
-  test two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
-  [1]
+  ! <dim># tests/one.janet</>
+  ! <dim># tests/two.janet</>
+  ! 
+  ! 2 passed
 
 Judge errors if you pass it a file that does not exist:
 
@@ -42,25 +57,26 @@ Single files work:
 
   $ judge main.janet
   hello
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
 Directories work:
 
   $ judge tests
-  test one
-  test two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
-  [1]
+  ! <dim># tests/one.janet</>
+  ! <dim># tests/two.janet</>
+  ! 
+  ! 2 passed
 
 And combinations of the two:
 
   $ judge tests main.janet
-  test one
-  test two
   hello
-  ! 0 passed 0 failed 0 skipped 0 unreachable
-  [1]
+  ! <dim># tests/one.janet</>
+  ! <dim># tests/two.janet</>
+  ! 
+  ! 2 passed
 
 Simplest possible test:
 
@@ -73,10 +89,14 @@ Simplest possible test:
 
   $ judge script.janet
   running test
-  ! running test: hello
-  ! <red>- (test (+ 1 2))</>
-  ! <grn>+ (test (+ 1 2) 3)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   (print "running test")
+  !   <red>(test (+ 1 2))</>
+  !   <grn>(test (+ 1 2) 3)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Tests passes:
@@ -89,8 +109,9 @@ Tests passes:
   > EOF
   $ judge script.janet
   running test
-  ! running test: hello
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 Tests fails due to error (this should probably also patch!):
 
@@ -102,15 +123,19 @@ Tests fails due to error (this should probably also patch!):
   >   (test (+ 1 2) 0))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>test raised:</>
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   <red>(test (+ 1 2) 0)</>
+  !   <grn>(test (+ 1 2) 3)</>
+  !   (error "oh no")
+  !   <red># did not reach expectation</>
+  !   <red>(test (+ 1 2) 0)</>)
+  ! 
   ! error: oh no
   !   in <anonymous> [script.janet] on line 2, column 1
-  ! <red>- (test (+ 1 2) 0)</>
-  ! <grn>+ (test (+ 1 2) 3)</>
-  ! <red>did not reach expectation</>
-  ! <red>- (test (+ 1 2) 0)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Exception in test expression:
@@ -121,10 +146,13 @@ Exception in test expression:
   >   (test (error "oh no") 0))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>oh no</>
-  ! <red>- (test (error "oh no") 0)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   <red># oh no</>
+  !   <red>(test (error "oh no") 0)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Unreachable test:
@@ -138,7 +166,8 @@ Unreachable test:
   > EOF
   $ judge script.janet
   ! <red>hello did not run</>
-  ! 0 passed 0 failed 0 skipped 1 unreachable
+  ! 
+  ! 0 passed 1 unreachable
   [1]
 
 Unreachable expectation:
@@ -152,10 +181,15 @@ Unreachable expectation:
   > EOF
   $ judge script.janet
   running test
-  ! running test: hello
-  ! <red>did not reach expectation</>
-  ! <red>- (test (+ 1 2) 3)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   (print "running test")
+  !   (when false
+  !     <red># did not reach expectation</>
+  !     <red>(test (+ 1 2) 3)</>))
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Expectation runs multiple times (same result, no expected value):
@@ -167,10 +201,14 @@ Expectation runs multiple times (same result, no expected value):
   >     (test (+ 1 1))))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>- (test (+ 1 1))</>
-  ! <grn>+ (test (+ 1 1) 2)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   (for i 0 2
+  !     <red>(test (+ 1 1))</>
+  !     <grn>(test (+ 1 1) 2)</>))
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Expectation runs multiple times (same result, correct expected value):
@@ -182,8 +220,9 @@ Expectation runs multiple times (same result, correct expected value):
   >     (test (+ 1 1) 2)))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 Expectation runs multiple times (same result, incorrect expected value):
 
@@ -194,10 +233,14 @@ Expectation runs multiple times (same result, incorrect expected value):
   >     (test (+ 1 1) 3)))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>- (test (+ 1 1) 3)</>
-  ! <grn>+ (test (+ 1 1) 2)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   (for i 0 2
+  !     <red>(test (+ 1 1) 3)</>
+  !     <grn>(test (+ 1 1) 2)</>))
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Expectation runs multiple times (different results):
@@ -209,10 +252,14 @@ Expectation runs multiple times (different results):
   >     (test i)))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! <red>inconsistent results</>
-  ! <red>- (test i)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   (for i 0 2
+  !     <red># inconsistent results</>
+  !     <red>(test i)</>))
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Test types:
@@ -224,8 +271,9 @@ Test types:
   >   (test (state :num) 0))
   > EOF
   $ judge script.janet
-  ! running test: hello
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 Top-level test:
 
@@ -235,13 +283,15 @@ Top-level test:
   > (test (+ 1 2) 0)
   > EOF
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! <red>- (test (+ 1 2))</>
-  ! <grn>+ (test (+ 1 2) 3)</>
-  ! running test: script.janet:3:1
-  ! <red>- (test (+ 1 2) 0)</>
-  ! <grn>+ (test (+ 1 2) 3)</>
-  ! 0 passed 2 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test (+ 1 2))</>
+  ! <grn>(test (+ 1 2) 3)</>
+  ! 
+  ! <red>(test (+ 1 2) 0)</>
+  ! <grn>(test (+ 1 2) 3)</>
+  ! 
+  ! 0 passed 2 failed
   [1]
 
   $ cat script.janet.tested
@@ -258,13 +308,16 @@ test-error:
   >   (test-error (+ 1 2) 0))
   > EOF
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! <red>- (test-error (error "hello"))</>
-  ! <grn>+ (test-error (error "hello") "hello")</>
-  ! running test: okay
-  ! <red>did not error</>
-  ! <red>- (test-error (+ 1 2) 0)</>
-  ! 0 passed 2 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-error (error "hello"))</>
+  ! <grn>(test-error (error "hello") "hello")</>
+  ! 
+  ! (deftest "okay"
+  !   <red># did not error</>
+  !   <red>(test-error (+ 1 2) 0)</>)
+  ! 
+  ! 0 passed 2 failed
   [1]
 
   $ cat script.janet.tested
@@ -283,9 +336,9 @@ Tests run as soon as they're encountered:
   > (test x 1)
   > EOF
   $ judge script.janet
-  ! running test: script.janet:3:1
-  ! running test: script.janet:5:1
-  ! 2 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 2 passed
 
 Multiple expectations:
 
@@ -294,8 +347,10 @@ Multiple expectations:
   > (test 0 0 1 2)
   > EOF
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! <red>- (test 0 0 1 2)</>
-  ! <grn>+ (test 0 0)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test 0 0 1 2)</>
+  ! <grn>(test 0 0)</>
+  ! 
+  ! 0 passed 1 failed
   [1]

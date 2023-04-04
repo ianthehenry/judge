@@ -8,12 +8,14 @@ test-stdout:
   > EOF
 
   $ judge script.janet -a
-  ! running test: script.janet:2:1
-  ! <red>- (test-stdout (print "hi"))</>
-  ! <grn>+ (test-stdout (print "hi") `
-  ! +   hi
-  ! + `)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-stdout (print "hi"))</>
+  ! <grn>(test-stdout (print "hi") `
+  !   hi
+  ! `)</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -23,8 +25,9 @@ test-stdout:
   `)
 
   $ judge
-  ! running test: script.janet:2:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 test-stdout includes value if it's not nil:
 
@@ -34,12 +37,14 @@ test-stdout includes value if it's not nil:
   > EOF
 
   $ judge script.janet -a
-  ! running test: script.janet:2:1
-  ! <red>- (test-stdout (do (print "hi") 1))</>
-  ! <grn>+ (test-stdout (do (print "hi") 1) `
-  ! +   hi
-  ! + ` 1)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-stdout (do (print "hi") 1))</>
+  ! <grn>(test-stdout (do (print "hi") 1) `
+  !   hi
+  ! ` 1)</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -48,8 +53,9 @@ test-stdout includes value if it's not nil:
     hi
   ` 1)
   $ judge
-  ! running test: script.janet:2:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 test-stdout indents output correctly:
 
@@ -60,12 +66,15 @@ test-stdout indents output correctly:
   > EOF
 
   $ judge script.janet -a
-  ! running test: indentation test
-  ! <red>- (test-stdout (do (print "hi") 1))</>
-  ! <grn>+ (test-stdout (do (print "hi") 1) `
-  ! +     hi
-  ! +   ` 1)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "indentation test"
+  !   <red>(test-stdout (do (print "hi") 1))</>
+  !   <grn>(test-stdout (do (print "hi") 1) `
+  !     hi
+  !   ` 1)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -76,8 +85,9 @@ test-stdout indents output correctly:
     ` 1))
 
   $ judge
-  ! running test: indentation test
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 Trailing newline is always added, due to craziness of the Janet backtick string parser:
 
@@ -92,19 +102,22 @@ Trailing newline is always added, due to craziness of the Janet backtick string 
   > EOF
 
   $ judge script.janet -a
-  ! running test: indentation test
-  ! <red>- (test-stdout (greet))</>
-  ! <grn>+ (test-stdout (greet) `
-  ! +     hi
-  ! +     bye
-  ! +   `)</>
-  ! running test: script.janet:7:1
-  ! <red>- (test-stdout (greet))</>
-  ! <grn>+ (test-stdout (greet) `
-  ! +   hi
-  ! +   bye
-  ! + `)</>
-  ! 0 passed 2 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "indentation test"
+  !   <red>(test-stdout (greet))</>
+  !   <grn>(test-stdout (greet) `
+  !     hi
+  !     bye
+  !   `)</>)
+  ! 
+  ! <red>(test-stdout (greet))</>
+  ! <grn>(test-stdout (greet) `
+  !   hi
+  !   bye
+  ! `)</>
+  ! 
+  ! 0 passed 2 failed
   [1]
 
   $ cat script.janet
@@ -123,9 +136,9 @@ Trailing newline is always added, due to craziness of the Janet backtick string 
   `)
 
   $ judge
-  ! running test: indentation test
-  ! running test: script.janet:10:1
-  ! 2 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 2 passed
 
 Quotes with a sufficient number of backticks:
 
@@ -136,13 +149,16 @@ Quotes with a sufficient number of backticks:
   > EOF
 
   $ judge script.janet -a
-  ! running test: indentation test
-  ! <red>- (test-stdout (do (print "``hi`") (prin "b````ye")))</>
-  ! <grn>+ (test-stdout (do (print "``hi`") (prin "b````ye")) `````
-  ! +     ``hi`
-  ! +     b````ye
-  ! +   `````)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "indentation test"
+  !   <red>(test-stdout (do (print "``hi`") (prin "b````ye")))</>
+  !   <grn>(test-stdout (do (print "``hi`") (prin "b````ye")) `````
+  !     ``hi`
+  !     b````ye
+  !   `````)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -154,6 +170,7 @@ Quotes with a sufficient number of backticks:
     `````))
 
   $ judge
-  ! running test: indentation test
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 

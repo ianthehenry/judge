@@ -49,7 +49,7 @@
     (- form-length 1)))
 
 # replacements is a list of [start-index length new-string]
-(defn- string-splice [str replacements]
+(defn string-splice [str replacements]
   (def replacements (sorted-by 0 replacements))
 
   (do
@@ -90,7 +90,7 @@
 (defn get-form [{:source source :lines lines} pos]
   (def start (pos-to-byte-index lines pos))
   (def len (get-form-length source start))
-  (util/slice-len source start len))
+  [start (util/slice-len source start len)])
 
 # replacements should be a list of [form-pos replacement-str]
 (defn rewrite-forms [{:source source :lines lines} replacements]

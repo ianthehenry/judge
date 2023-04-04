@@ -8,10 +8,13 @@ Fills in the blank:
   >   (test (+ 1 2)))
   > EOF
   $ judge
-  ! running test: test
-  ! <red>- (test (+ 1 2))</>
-  ! <grn>+ (test (+ 1 2) 3)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "test"
+  !   <red>(test (+ 1 2))</>
+  !   <grn>(test (+ 1 2) 3)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ show_tested
@@ -19,7 +22,7 @@ Fills in the blank:
   (deftest "test"
     (test (+ 1 2) 3))
 
-Very long values get their own lines:
+Very long values should get their own lines, but don't:
 
   $ use <<EOF
   > (use judge)
@@ -27,10 +30,13 @@ Very long values get their own lines:
   >   (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]))
   > EOF
   $ judge
-  ! running test: test
-  ! <red>- (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
-  ! <grn>+ (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "test"
+  !   <red>(test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
+  !   <grn>(test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ show_tested
@@ -112,11 +118,15 @@ Uncaught exceptions cause tests to fail:
   >   (error "oh no"))
   > EOF
   $ judge
-  ! running test: test
-  ! <red>test raised:</>
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "test"
+  !   (error "oh no"))
+  ! 
   ! error: oh no
   !   in <anonymous> [script.janet] on line 2, column 1
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Reports multiple failed expectations:
@@ -128,12 +138,15 @@ Reports multiple failed expectations:
   >   (test 3 4))
   > EOF
   $ judge
-  ! running test: test
-  ! <red>- (test 1 2)</>
-  ! <grn>+ (test 1 1)</>
-  ! <red>- (test 3 4)</>
-  ! <grn>+ (test 3 3)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "test"
+  !   <red>(test 1 2)</>
+  !   <grn>(test 1 1)</>
+  !   <red>(test 3 4)</>
+  !   <grn>(test 3 3)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 test-error fills in error:
@@ -145,10 +158,13 @@ test-error fills in error:
   > EOF
 
   $ judge
-  ! running test: errors
-  ! <red>- (test-error (error "raised"))</>
-  ! <grn>+ (test-error (error "raised") "raised")</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "errors"
+  !   <red>(test-error (error "raised"))</>
+  !   <grn>(test-error (error "raised") "raised")</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 test-error corrects error:
@@ -160,10 +176,13 @@ test-error corrects error:
   > EOF
 
   $ judge
-  ! running test: errors
-  ! <red>- (test-error (error "raised") "braised")</>
-  ! <grn>+ (test-error (error "raised") "raised")</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "errors"
+  !   <red>(test-error (error "raised") "braised")</>
+  !   <grn>(test-error (error "raised") "raised")</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 test-error passes:
@@ -175,8 +194,9 @@ test-error passes:
   > EOF
 
   $ judge
-  ! running test: errors
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 test-error fails if nothing raises:
 
@@ -187,8 +207,11 @@ test-error fails if nothing raises:
   > EOF
 
   $ judge
-  ! running test: errors
-  ! <red>did not error</>
-  ! <red>- (test-error 123)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "errors"
+  !   <red># did not error</>
+  !   <red>(test-error 123)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]

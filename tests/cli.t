@@ -16,12 +16,14 @@ Usage:
   === flags ===
   
     [--help]                   : Print this help text and exit
-    [-a], [--accept]           : overwrite source files with .tested files
+    [-a], [--accept]           : overwrite all source files with .tested files
+    [-i], [--interactive]      : select which replacements to include
     [--not-name-exact NAME]... : skip tests whose name is exactly this prefix
     [--name-exact NAME]...     : only run tests with this exact name
     [--not-name PREFIX]...     : skip tests whose name starts with this prefix
     [--name PREFIX]...         : only run tests whose name starts with the given
                                  prefix
+    [-v], [--verbose]          : verbose output
 
   $ use test.janet <<EOF
   > (use judge)
@@ -33,47 +35,59 @@ Usage:
 
 Runs everything by default:
 
-  $ judge test.janet
+  $ judge test.janet -v
+  ! <dim># test.janet</>
   ! running test: first
   ! running test: second
-  ! 2 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 2 passed
 
 Name matches prefix:
 
-  $ judge test.janet --name fir
+  $ judge test.janet --name fir -v
+  ! <dim># test.janet</>
   ! running test: first
-  ! 1 passed 0 failed 1 skipped 0 unreachable
+  ! 
+  ! 1 passed 1 skipped
 
 Name exact does not match prefix:
 
-  $ judge test.janet --name-exact fir
-  ! 0 passed 0 failed 2 skipped 0 unreachable
+  $ judge test.janet --name-exact fir -v
+  ! 
+  ! 0 passed 2 skipped
   [1]
 
 At:
 
-  $ judge test.janet:2:1
+  $ judge test.janet:2:1 -v
+  ! <dim># test.janet</>
   ! running test: first
-  ! 1 passed 0 failed 1 skipped 0 unreachable
+  ! 
+  ! 1 passed 1 skipped
 
 At should work for any position in between start and end:
 
-  $ judge test.janet:2:20
+  $ judge test.janet:2:20 -v
+  ! <dim># test.janet</>
   ! running test: first
-  ! 1 passed 0 failed 1 skipped 0 unreachable
+  ! 
+  ! 1 passed 1 skipped
 
 TODO: this is a weird bug
 At should work for any column position even if it exceeds the length of the file:
 
-  $ judge test.janet:1:1000
-  ! 0 passed 0 failed 2 skipped 0 unreachable
+  $ judge test.janet:1:1000 -v
+  ! 
+  ! 0 passed 2 skipped
   [1]
 
 You can exclude tests:
 
-  $ judge test.janet --not-name first
+  $ judge test.janet --not-name first -v
+  ! <dim># test.janet</>
   ! running test: second
-  ! 1 passed 0 failed 1 skipped 0 unreachable
+  ! 
+  ! 1 passed 1 skipped
 
 Accepting tests overwrites the file:
 
@@ -84,10 +98,13 @@ Accepting tests overwrites the file:
   > EOF
 
   $ judge test.janet -a
-  ! running test: test
-  ! <red>- (test 1)</>
-  ! <grn>+ (test 1 1)</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># test.janet</>
+  ! 
+  ! (deftest "test"
+  !   <red>(test 1)</>
+  !   <grn>(test 1 1)</>)
+  ! 
+  ! 0 passed 1 failed
   [1]
   $ cat test.janet
   (use judge)
@@ -112,7 +129,8 @@ Does not traverse hidden files or folders:
   > EOF
 
   $ judge
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge test.janet
@@ -121,20 +139,23 @@ Does not traverse hidden files or folders:
 
 Will run hidden files or folders by explicit request:
 
-  $ judge .foo.janet
+  $ judge .foo.janet -v
   hidden file
-  ! running test: .foo.janet:3:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># .foo.janet</>
+  ! 
+  ! 1 passed
 
   $ judge .hidden
   hello
-  ! running test: .hidden/hello.janet:3:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># .hidden/hello.janet</>
+  ! 
+  ! 1 passed
 
   $ judge .hidden/hello.janet
   hello
-  ! running test: .hidden/hello.janet:3:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># .hidden/hello.janet</>
+  ! 
+  ! 1 passed
 
 Can be used as a jpm task:
 
@@ -148,5 +169,6 @@ Can be used as a jpm task:
   > EOF
 
   $ jpm test 2>&1 | sanitize
-  running test: test.janet:2:1
-  1 passed 0 failed 0 skipped 0 unreachable
+  <dim># test.janet</>
+  
+  1 passed

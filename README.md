@@ -45,12 +45,14 @@ The Judge test runner gives you a lot flexibility over how you structure your te
 
 Run your tests with the Judge test runner:
 
-```
+```diff
 $ judge
-running test: sort.janet:14:1
+# sort.janet
+
 - (test (slow-sort [3 1 4 2]))
 + (test (slow-sort [3 1 4 2]) [1 2 3 4])
-0 passed 1 failed 0 skipped 0 unreachable
+
+0 passed 1 failed
 ```
 
 And look! It fixed your tests:
@@ -97,7 +99,7 @@ So that you can just run it as `judge`.
 $ judge --help
 Test runner for Judge.
 
-  jpm_tree/bin/judge FILE[:LINE:COL]
+  judge [FILE[:LINE:COL]]...
 
 If no targets are given on the command line, Judge will look for tests in the
 current working directory.
@@ -108,12 +110,14 @@ specific location (which is mostly useful for editor tooling).
 === flags ===
 
   [--help]                   : Print this help text and exit
-  [-a], [--accept]           : overwrite source files with .tested files
+  [-a], [--accept]           : overwrite all source files with .tested files
+  [-i], [--interactive]      : select which replacements to include
   [--not-name-exact NAME]... : skip tests whose name is exactly this prefix
   [--name-exact NAME]...     : only run tests with this exact name
   [--not-name PREFIX]...     : skip tests whose name starts with this prefix
   [--name PREFIX]...         : only run tests whose name starts with the given
                                prefix
+  [-v], [--verbose]          : verbose output
 ```
 
 You can also add this to your `project.janet` file:
@@ -254,8 +258,13 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 ## next
 
-- fixed a bug where `test-macro` failures would insert an extra newline
-- nested tuples now render with square brackets (not just top-level tuples)
+- Added `--interactive` mode
+- Judge now prints the file name before running tests
+- Judge now prints the full source of a test on failure
+- Added a `--verbose` flag
+- Judge no longer prints the names of tests before it runs them unless you pass the `--verbose` flag
+- Fixed a bug where `test-macro` failures would insert an extra newline
+- Tuples now always render with square brackets (not just top-level tuples)
 
 ## v2.2.2 2023-04-02
 

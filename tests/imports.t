@@ -21,36 +21,42 @@ Judge populates the module cache correctly regardless of import type:
 
   $ judge one.janet
   one
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge two.janet
   two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge three.janet
   three
   one
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge four.janet
   four
   two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge one.janet three.janet
   one
   three
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge two.janet four.janet
   two
   four
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
 Exploring relative path imports:
@@ -63,13 +69,15 @@ Exploring relative path imports:
   $ judge ../four.janet
   four
   subdirectory two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
   $ judge two.janet ../four.janet
   subdirectory two
   four
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
 This is a bug that happens because we import something/two.janet
@@ -81,7 +89,8 @@ this is really worth guarding against.
   $ judge two.janet ../something/two.janet
   subdirectory two
   subdirectory two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]
 
 You can still import by absolute path if you want, but it will
@@ -91,5 +100,6 @@ get yet another module cache entry:
   subdirectory two
   subdirectory two
   subdirectory two
-  ! 0 passed 0 failed 0 skipped 0 unreachable
+  ! 
+  ! 0 passed
   [1]

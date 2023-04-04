@@ -8,13 +8,15 @@ test-macro:
   > EOF
 
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! <red>- (test-macro (let [x 1] x))</>
-  ! <grn>+ (test-macro (let [x 1] x)
-  ! +   (do
-  ! +     (def x 1)
-  ! +     x))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (let [x 1] x))</>
+  ! <grn>(test-macro (let [x 1] x)
+  !   (do
+  !     (def x 1)
+  !     x))</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet.tested
@@ -32,17 +34,19 @@ test-macro simplifies gensyms:
   > EOF
 
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! <red>- (test-macro (each x x))</>
-  ! <grn>+ (test-macro (each x x)
-  ! +   (do
-  ! +     (def <1> x)
-  ! +     (var <2> (@next <1> nil))
-  ! +     (while
-  ! +       (@not= nil <2>)
-  ! +       (def x (@in <1> <2>))
-  ! +       (set <2> (@next <1> <2>)))))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (each x x))</>
+  ! <grn>(test-macro (each x x)
+  !   (do
+  !     (def <1> x)
+  !     (var <2> (@next <1> nil))
+  !     (while
+  !       (@not= nil <2>)
+  !       (def x (@in <1> <2>))
+  !       (set <2> (@next <1> <2>)))))</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet.tested
@@ -58,8 +62,9 @@ test-macro simplifies gensyms:
 
   $ mv script.janet{.tested,}
   $ judge script.janet
-  ! running test: script.janet:2:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
 Macros that raise are gracefully handled:
 
@@ -70,10 +75,12 @@ Macros that raise are gracefully handled:
   > EOF
 
   $ judge script.janet
-  ! running test: script.janet:3:1
-  ! <red>oh no</>
-  ! <red>- (test-macro (oh-no))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red># oh no</>
+  ! <red>(test-macro (oh-no))</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
 Macros with incorrect expansions do not insert extra newlines:
@@ -88,16 +95,18 @@ Macros with incorrect expansions do not insert extra newlines:
   > EOF
 
   $ judge script.janet -a
-  ! running test: script.janet:3:1
-  ! <red>- (test-macro (foo)
-  ! -   (do
-  ! -     (print "two")
-  ! -     (print "one")))</>
-  ! <grn>+ (test-macro (foo)
-  ! +   (do
-  ! +     (print "one")
-  ! +     (print "two")))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (foo)
+  !   (do
+  !     (print "two")
+  !     (print "one")))</>
+  ! <grn>(test-macro (foo)
+  !   (do
+  !     (print "one")
+  !     (print "two")))</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -119,15 +128,17 @@ Macros with crazy formatting do not keep crazy formatting after correction:
   > EOF
 
   $ judge script.janet -a
-  ! running test: script.janet:3:1
-  ! <red>- (test-macro (foo) (do      
-  ! - (print "two")
-  ! -         (print "one")))</>
-  ! <grn>+ (test-macro (foo)
-  ! +   (do
-  ! +     (print "one")
-  ! +     (print "two")))</>
-  ! 0 passed 1 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (foo) (do      
+  ! (print "two")
+  !         (print "one")))</>
+  ! <grn>(test-macro (foo)
+  !   (do
+  !     (print "one")
+  !     (print "two")))</>
+  ! 
+  ! 0 passed 1 failed
   [1]
 
   $ cat script.janet
@@ -149,8 +160,9 @@ Correct macros can keep whatever crazy formatting they want:
   > EOF
 
   $ judge script.janet -a
-  ! running test: script.janet:3:1
-  ! 1 passed 0 failed 0 skipped 0 unreachable
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
 
   $ cat script.janet
   (use judge)
