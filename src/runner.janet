@@ -85,10 +85,12 @@ results)
     (string/join "\n")))
 
 (defn interactive-verdict []
-  (eprinf "\nVerdict? %s " (colorize/dim "ynaAdqQ?"))
+  (eprinf "\nVerdict? %s " (colorize/dim "[y]naAdqQ?"))
   (def char (let [line (file/read stdin :line)]
     (if line
-      (if (= (length line) 2) (in line 0)))))
+      (case (length line)
+        1 (chr "y")
+        2 (in line 0)))))
   (eprint)
   (case char
     (chr "y") :stage

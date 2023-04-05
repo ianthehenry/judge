@@ -15,7 +15,7 @@ Accepting refuses to run if file has been modified:
   !   <red>(test 1)</>
   !   <grn>(test 1 1)</>)
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! <red>test.janet changed since test runner began; refusing to overwrite</>
   ! 
   ! 0 passed 1 failed

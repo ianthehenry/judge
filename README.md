@@ -259,6 +259,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 ## v2.3.1 2023-04-04
 
 - Fixed a bug where corrections for mutable `@`-prefixed values would be written incorrectly if the expectation was already an `@`-prefixed value
+- In `--interactive` mode, the default if no option is supplied is `y` instead of `q`
 
 ## v2.3.0 2023-04-03
 

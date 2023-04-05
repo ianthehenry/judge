@@ -14,12 +14,12 @@ Interactive mode allows you to select which tests to patch:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! 0 passed 2 failed
   [1]
@@ -27,6 +27,35 @@ Interactive mode allows you to select which tests to patch:
   $ cat script.janet
   (use judge)
   (test 1)
+  (test 2 2)
+
+Default interactive response is yes:
+
+  $ use <<EOF
+  > (use judge)
+  > (test 1)
+  > (test 2)
+  > EOF
+
+  $ (echo; echo) | judge script.janet -i
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test 1)</>
+  ! <grn>(test 1 1)</>
+  ! 
+  ! Verdict? <dim>[y]naAdqQ?</> 
+  ! 
+  ! <red>(test 2)</>
+  ! <grn>(test 2 2)</>
+  ! 
+  ! Verdict? <dim>[y]naAdqQ?</> 
+  ! 
+  ! 0 passed 2 failed
+  [1]
+
+  $ cat script.janet
+  (use judge)
+  (test 1 1)
   (test 2 2)
 
 Interactive mode prompts for each test, not each expectation:
@@ -50,7 +79,7 @@ Interactive mode prompts for each test, not each expectation:
   !   <red>(test 2)</>
   !   <grn>(test 2 2)</>)
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! (deftest "group two"
   !   <red>(test 3)</>
@@ -58,7 +87,7 @@ Interactive mode prompts for each test, not each expectation:
   !   <red>(test 4)</>
   !   <grn>(test 4 4)</>)
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! 0 passed 2 failed
   [1]
@@ -85,7 +114,7 @@ Interactive help:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! y - patch this test
   ! n - do not patch this test
   ! a - patch this and all subsequent tests in this file
@@ -95,7 +124,7 @@ Interactive help:
   ! Q - abort: exit immediately without patching any files
   ! ? - print help
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! 0 passed 1 failed
   [1]
@@ -113,7 +142,7 @@ Interactive help triggers on any unknown input:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! 0 passed 1 failed
   [1]
@@ -138,7 +167,7 @@ Interactive [a] stops prompting for the current file only:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
@@ -148,12 +177,12 @@ Interactive [a] stops prompting for the current file only:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 3)</>
   ! <grn>(test 3 3)</>
@@ -191,7 +220,7 @@ Interactive [A] stops prompting for all files:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
@@ -240,12 +269,12 @@ Interactive [q] writes any staged corrections:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! 0 passed 2 failed
   [1]
@@ -280,12 +309,12 @@ Interactive [Q] stops the process immediately without writing any corrections:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   [1]
 
   $ cat one.janet
@@ -319,12 +348,12 @@ Interactive [d] stops prompting for the current file only:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 3)</>
   ! <grn>(test 3 3)</>
@@ -334,7 +363,7 @@ Interactive [d] stops prompting for the current file only:
   ! <red>(test 1)</>
   ! <grn>(test 1 1)</>
   ! 
-  ! Verdict? <dim>ynaAdqQ?</> 
+  ! Verdict? <dim>[y]naAdqQ?</> 
   ! 
   ! <red>(test 2)</>
   ! <grn>(test 2 2)</>
