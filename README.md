@@ -256,6 +256,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- Fixed a bug where corrections for mutable `@`-prefixed values would be written incorrectly if the expectation was already an `@`-prefixed value
+
 ## v2.3.0 2023-04-03
 
 - Added `--interactive` mode

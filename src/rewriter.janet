@@ -84,7 +84,13 @@
   (def result @[])
   (while (parser/has-more p)
     (def pos (tuple/sourcemap (parser/produce p true)))
-    (array/push result (+ start-index 1 (pos-to-byte-index lines pos))))
+    # the sourcemap for forms like @[] is the index of
+    # the bracket, not the index of the @ sign. I think this
+    # is a bug, but in any case we have to work around it here.
+    (def index (pos-to-byte-index lines pos))
+    (def prev-char (if (> index 0) (in innards (- index 1))))
+    (def adjustment (case prev-char (chr "@") -1 0))
+    (array/push result (+ start-index 1 index adjustment)))
   result)
 
 (defn get-form [{:source source :lines lines} pos]

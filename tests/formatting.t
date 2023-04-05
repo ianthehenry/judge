@@ -103,3 +103,34 @@ Nested tuples still render with brackets:
   ! 
   ! 0 passed 1 failed
   [1]
+
+Arrays and other @-prefixed forms don't correct incorrectly:
+
+  $ use <<EOF
+  > (use judge)
+  > (test @[1 2 3] @[1 2])
+  > (test @[1 2] [1 2])
+  > (test [1 2] @[1 2])
+  > (test @{1 2 3 4} @[1 2])
+  > (test @"1 2 3" @[1 2])
+  > EOF
+  $ judge
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test @[1 2 3] @[1 2])</>
+  ! <grn>(test @[1 2 3] @[1 2 3])</>
+  ! 
+  ! <red>(test @[1 2] [1 2])</>
+  ! <grn>(test @[1 2] @[1 2])</>
+  ! 
+  ! <red>(test [1 2] @[1 2])</>
+  ! <grn>(test [1 2] [1 2])</>
+  ! 
+  ! <red>(test @{1 2 3 4} @[1 2])</>
+  ! <grn>(test @{1 2 3 4} @{1 2 3 4})</>
+  ! 
+  ! <red>(test @"1 2 3" @[1 2])</>
+  ! <grn>(test @"1 2 3" @"1 2 3")</>
+  ! 
+  ! 0 passed 5 failed
+  [1]
