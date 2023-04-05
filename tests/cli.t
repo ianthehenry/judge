@@ -142,6 +142,7 @@ Will run hidden files or folders by explicit request:
   $ judge .foo.janet -v
   hidden file
   ! <dim># .foo.janet</>
+  ! running test: .foo.janet:3:1
   ! 
   ! 1 passed
 
