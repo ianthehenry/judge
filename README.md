@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.3.0"}
+     :tag "v2.3.1"}
   ])
 ```
 
