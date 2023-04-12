@@ -11,6 +11,7 @@ Exported symbols:
   >   (pp sym))
   > EOF
   $ run
+  defmacro*
   deftest
   deftest-type
   deftest:

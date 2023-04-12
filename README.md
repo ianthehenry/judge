@@ -128,7 +128,7 @@ You can also add this to your `project.janet` file:
 
 To run Judge with a normal `jpm test` invocation.
 
-## Writing tests
+# Writing tests
 
 ## `test`
 
@@ -206,7 +206,20 @@ You don't have to use `deftest`, though. You can create anonymous, single-expres
 (test (+ 1 2) 3)
 ```
 
-## Running tests
+## Custom testing macros
+
+You can write macros that wrap any of the existing test-macros using `defmacro*`. For example:
+
+```
+(defmacro* test-loudly [exp & args]
+  ~(test (string/ascii-upper ,exp) ,;args))
+
+(test-loudly "hi" "HI")
+```
+
+The only difference between `defmacro` and `defmacro*` is that `defmacro*` copies the source map from the macro to its expansion, which Judge needs in order to patch code.
+
+# Running tests
 
 Run all tests in a particular file:
 
@@ -224,7 +237,7 @@ Run test on a specific line/column (useful for editor tooling):
 
     $ judge test.janet:10:2
 
-## Context-dependent tests
+# Context-dependent tests
 
 Sometimes you might have a bunch of tests that all need some kind of shared context -- a SQL connection, maybe, or an OpenGL graphics context. You could create that context anew at the beginning of every test, but that might be very expensive. There are some cases where it might be appropriate to create the context a single time, and pass it in to every test of that type.
 
@@ -255,6 +268,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## next
+
+- Added `defmacro*`, for defining custom assertion types.
 
 ## v2.3.1 2023-04-04
 

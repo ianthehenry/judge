@@ -197,3 +197,11 @@
 
 (defmacro test [<expr> & <expected>]
   (test* <expr> <expected> normal-stabilize normal-printer))
+
+(defn- with-map [src dest]
+  (tuple/setmap dest ;(tuple/sourcemap src)))
+
+(defmacro defmacro* [name binding-form & body]
+  ~(defmacro ,name ,binding-form
+    (,with-map (,dyn *macro-form*)
+      (do ,;body))))
