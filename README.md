@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.3.1"}
+     :tag "v2.4.0"}
   ])
 ```
 
@@ -269,7 +269,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next 2023-04-23
+## v2.4.0 2023-04-23
 
 - Added `defmacro*`, for defining custom assertion types.
 - `test` now pretty-prints its output, splitting large data structures across multiple lines and sorting keys of associative structures.
