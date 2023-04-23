@@ -22,7 +22,7 @@ Fills in the blank:
   (deftest "test"
     (test (+ 1 2) 3))
 
-Very long values should get their own lines, but don't:
+Long values appear on multiple lines:
 
   $ use <<EOF
   > (use judge)
@@ -34,7 +34,24 @@ Very long values should get their own lines, but don't:
   ! 
   ! (deftest "test"
   !   <red>(test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>
-  !   <grn>(test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17])</>)
+  !   <grn>(test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]
+  !     [1
+  !      2
+  !      3
+  !      4
+  !      5
+  !      6
+  !      7
+  !      8
+  !      9
+  !      10
+  !      11
+  !      12
+  !      13
+  !      14
+  !      15
+  !      16
+  !      17])</>)
   ! 
   ! 0 passed 1 failed
   [1]
@@ -42,7 +59,24 @@ Very long values should get their own lines, but don't:
   $ show_tested
   (use judge)
   (deftest "test"
-    (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17] [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]))
+    (test [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17]
+      [1
+       2
+       3
+       4
+       5
+       6
+       7
+       8
+       9
+       10
+       11
+       12
+       13
+       14
+       15
+       16
+       17]))
 
 Preserves formatting before result:
 

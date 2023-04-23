@@ -64,11 +64,6 @@
       (walk recur node)))
   (recur node))
 
-(defn bracketify [node]
-  (if (tuple? node)
-    (tuple/brackets ;(walk (comp stabilize bracketify) node))
-    (walk bracketify node)))
-
 (defn but-last [t]
   (tuple/slice t 0 (- (length t) 1)))
 
@@ -93,3 +88,10 @@
 
 (defn last? [i list]
   (= i (- (length list) 1)))
+
+(defmacro catseq [dsl & body]
+  (with-syms [$result]
+    ~(let [,$result @[]]
+      (loop ,dsl
+        (,array/concat ,$result (do ,;body)))
+      ,$result)))

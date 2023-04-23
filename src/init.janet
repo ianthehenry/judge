@@ -103,7 +103,7 @@
 (defn- normal-stabilize [node] [(util/stabilize node)])
 
 (defn- normal-printer [col form]
-  (string/format "%q" (util/bracketify form)))
+  (fmt/to-string-pretty form (+ col 1)))
 
 (defn- macro-printer [col form]
   (def buf @"\n")

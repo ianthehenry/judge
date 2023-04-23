@@ -269,9 +269,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## next 2023-04-23
 
 - Added `defmacro*`, for defining custom assertion types.
+- `test` now pretty-prints its output, splitting large data structures across multiple lines and sorting keys of associative structures.
 
 ## v2.3.1 2023-04-04
 

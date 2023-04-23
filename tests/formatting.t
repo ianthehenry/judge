@@ -42,7 +42,11 @@ Pointers are replaced with unique strings:
   ! <grn>(test (peg/compile "a") "<core/peg 0x1>")</>
   ! 
   ! <red>(test [x x (peg/compile "a") x])</>
-  ! <grn>(test [x x (peg/compile "a") x] ["<core/peg 0x1>" "<core/peg 0x1>" "<core/peg 0x2>" "<core/peg 0x1>"])</>
+  ! <grn>(test [x x (peg/compile "a") x]
+  !   ["<core/peg 0x1>"
+  !    "<core/peg 0x1>"
+  !    "<core/peg 0x2>"
+  !    "<core/peg 0x1>"])</>
   ! 
   ! 0 passed 3 failed
   [1]
@@ -134,3 +138,22 @@ Arrays and other @-prefixed forms don't correct incorrectly:
   ! 
   ! 0 passed 5 failed
   [1]
+
+Does not distinguish bracketed tuples:
+
+  $ use <<EOF
+  > (use judge)
+  > (test [1 '[2] 3])
+  > EOF
+  $ judge -a
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test [1 '[2] 3])</>
+  ! <grn>(test [1 '[2] 3] [1 [2] 3])</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
+  $ judge
+  ! <dim># script.janet</>
+  ! 
+  ! 1 passed
