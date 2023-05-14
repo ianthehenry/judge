@@ -159,9 +159,9 @@ If the expression to test does not evaluate to `nil`, it will be included in the
   (printf "adding %q and %q" a b)
   (+ a b))
 
-(test-stdout (add 1 2) 3 `
+(test-stdout (add 1 2) `
   adding 1 and 2
-`)
+` 3)
 ```
 
 Due to ambiguity in the Janet parser for multi-line strings, a trailing newline will always be added to the output if it does not exist.
