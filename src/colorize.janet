@@ -1,3 +1,5 @@
+(def- no-color (os/getenv "NO_COLOR" false))
+
 (def- colors
   {:black 0
    :red 1
@@ -17,19 +19,25 @@
   (+ color-code offset))
 
 (defn fg [color & strs]
-  (string "\e[" (encode color foreground) "m" ;strs "\e[0m"))
+  (if-not no-color
+    (string "\e[" (encode color foreground) "m" ;strs "\e[0m")
+    (string ;strs)))
 
 (defn fgf [color & strs]
   (fg color (string/format ;strs)))
 
 (defn dim [& strs]
-  (string "\e[2m" ;strs "\e[0m"))
+  (if-not no-color
+    (string "\e[2m" ;strs "\e[0m")
+    (string ;strs)))
 
 (defn dimf [& strs]
   (dim (string/format ;strs)))
 
 (defn bg [color & strs]
-  (string "\e[" (encode color background) "m" ;strs "\e[0m"))
+  (if-not no-color
+    (string "\e[" (encode color background) "m" ;strs "\e[0m")
+    (string ;strs)))
 
 (defn bgf [color & strs]
   (bg color (string/format ;strs)))
