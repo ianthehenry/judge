@@ -23,6 +23,8 @@ Usage:
     [--not-name PREFIX]...     : skip tests whose name starts with this prefix
     [--name PREFIX]...         : only run tests whose name starts with the given
                                  prefix
+    [--color], [--no-color]    : default is --color unless the NO_COLOR environment
+                                 variable is set
     [-v], [--verbose]          : verbose output
 
   $ use test.janet <<EOF

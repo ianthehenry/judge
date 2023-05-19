@@ -287,7 +287,10 @@ results)
    [name-exact-filters --not-name-exact] (array arg/name)   "skip tests whose name is exactly this prefix"
    [--accept -a] (flag) "overwrite all source files with .tested files"
    [--interactive -i] (flag) "select which replacements to include"
+   no-color (last {--color false --no-color true}) "default is --color unless the NO_COLOR environment variable is set"
    [--verbose -v] (flag) "verbose output"]
+
+  (default no-color (truthy? (os/getenv "NO_COLOR" false)))
 
   (when (and accept interactive)
     (eprint "only one of --accept or --interactive allowed")
@@ -334,6 +337,7 @@ results)
     :file-cache @{}
     :replacements @{}))
   (put root-env *global-test-context* ctx)
+  (put root-env colorize/*no-color* no-color)
 
   (each file found-files
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))

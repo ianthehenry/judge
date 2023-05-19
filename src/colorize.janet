@@ -1,4 +1,4 @@
-(def- no-color (os/getenv "NO_COLOR" false))
+(def *no-color* (gensym))
 
 (def- colors
   {:black 0
@@ -18,8 +18,10 @@
   (assert color-code "color not found")
   (+ color-code offset))
 
+(defn- colorize? [] (not (dyn *no-color*)))
+
 (defn fg [color & strs]
-  (if-not no-color
+  (if (colorize?)
     (string "\e[" (encode color foreground) "m" ;strs "\e[0m")
     (string ;strs)))
 
@@ -27,7 +29,7 @@
   (fg color (string/format ;strs)))
 
 (defn dim [& strs]
-  (if-not no-color
+  (if (colorize?)
     (string "\e[2m" ;strs "\e[0m")
     (string ;strs)))
 
@@ -35,7 +37,7 @@
   (dim (string/format ;strs)))
 
 (defn bg [color & strs]
-  (if-not no-color
+  (if (colorize?)
     (string "\e[" (encode color background) "m" ;strs "\e[0m")
     (string ;strs)))
 

@@ -117,6 +117,8 @@ specific location (which is mostly useful for editor tooling).
   [--not-name PREFIX]...     : skip tests whose name starts with this prefix
   [--name PREFIX]...         : only run tests whose name starts with the given
                                prefix
+  [--color], [--no-color]    : default is --color unless the NO_COLOR environment
+                               variable is set
   [-v], [--verbose]          : verbose output
 ```
 
@@ -268,6 +270,11 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## next
+
+- Judge now respects the `NO_COLOR` environment variable
+- Added `--color` and `--no-color` flags
 
 ## v2.4.0 2023-04-23
 
