@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.4.0"}
+     :tag "v2.5.0"}
   ])
 ```
 
@@ -271,7 +271,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.5.0 2023-05-18
 
 - Judge now respects the `NO_COLOR` environment variable
 - Added `--color` and `--no-color` flags
