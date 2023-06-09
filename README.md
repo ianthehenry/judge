@@ -271,6 +271,11 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- You can now exclude files or tests with `--not`
+- Importing a file is no longer sufficient for tests to run
+
 ## v2.5.0 2023-05-18
 
 - Judge now respects the `NO_COLOR` environment variable

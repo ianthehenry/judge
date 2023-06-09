@@ -17,6 +17,7 @@ Usage:
   
     [--help]                   : Print this help text and exit
     [-a], [--accept]           : overwrite all source files with .tested files
+    [--not FILE[:LINE:COL]]... : skip all tests in this target
     [-i], [--interactive]      : select which replacements to include
     [--not-name-exact NAME]... : skip tests whose name is exactly this prefix
     [--name-exact NAME]...     : only run tests with this exact name
@@ -175,3 +176,53 @@ Can be used as a jpm task:
   <dim># test.janet</>
   
   1 passed
+
+Files that are only imported are not tested:
+
+  $ use util.janet <<EOF
+  > (use judge)
+  > (deftest "invisible" (test 1 1))
+  > EOF
+
+  $ use test.janet <<EOF
+  > (use judge)
+  > (use ./util)
+  > (deftest "first"
+  >   (test 1 1))
+  > (deftest "second"
+  >   (test 1 1))
+  > EOF
+
+  $ judge -v
+  ! <dim># util.janet</>
+  ! running test: invisible
+  ! <dim># test.janet</>
+  ! running test: first
+  ! running test: second
+  ! 
+  ! 3 passed
+  $ judge -v test.janet
+  ! <dim># test.janet</>
+  ! running test: first
+  ! running test: second
+  ! 
+  ! 2 passed
+
+Explicit file exclusion:
+
+  $ judge --not util.janet -v
+  ! <dim># test.janet</>
+  ! running test: first
+  ! running test: second
+  ! 
+  ! 2 passed 1 skipped
+
+Explicit test exclusion:
+
+  $ judge --not test.janet:5:1 -v
+  ! <dim># util.janet</>
+  ! running test: invisible
+  ! <dim># test.janet</>
+  ! running test: first
+  ! 
+  ! 2 passed 1 skipped

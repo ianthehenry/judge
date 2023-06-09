@@ -230,8 +230,16 @@ results)
         (os/exit 0)))
     })
 
+(defn file-selector-matches? [selector file]
+  (def selector (util/explicit-relative-path selector))
+  (def file (util/explicit-relative-path file))
+  (or (= file selector)
+    (string/has-prefix? (util/with-trailing-slash selector) file)))
+
 (defn matches [ctx test [predicate-type & predicate-args]]
   (case predicate-type
+    :file (let [[file-selector] predicate-args]
+      (file-selector-matches? file-selector (test :file)))
     :pos (let [[file pos] predicate-args]
       (and (= (test :file) file)
            (rewriter/pos-in-form?
@@ -245,13 +253,8 @@ results)
 (defn- some [list pred]
   (truthy? (some_ pred list)))
 
-(defn- with-trailing-slash [path]
-  (if (string/has-suffix? "/" path) path (string path "/")))
-
 (defn include-file? [file files-or-dirs]
-  (some files-or-dirs (fn [file-or-dir]
-    (or (= file file-or-dir)
-       (string/has-prefix? (with-trailing-slash file-or-dir) file)) files-or-dirs)))
+  (some files-or-dirs |(file-selector-matches? $ file)))
 
 # It might would be nice to error if a predicate had no effect.
 (defn make-test-predicate [files includes excludes] (fn [ctx test]
@@ -285,6 +288,7 @@ results)
    [name-exact-selectors   --name-exact] (array arg/name)   "only run tests with this exact name"
    [name-prefix-filters      --not-name] (array arg/prefix) "skip tests whose name starts with this prefix"
    [name-exact-filters --not-name-exact] (array arg/name)   "skip tests whose name is exactly this prefix"
+   [exclude-targets               --not] (array arg/target) "skip all tests in this target"
    [--accept -a] (flag) "overwrite all source files with .tested files"
    [--interactive -i] (flag) "select which replacements to include"
    no-color (last {--color false --no-color true}) "default is --color unless the NO_COLOR environment variable is set"
@@ -308,7 +312,12 @@ results)
     (eprintf "error: %s" err)
     (os/exit 1))
 
+  (def file-excluders (seq [[mode file] :in exclude-targets :when (= mode :all)]
+    [:file file]))
+
   (def pos-selectors (seq [[mode file line col] :in targets :when (= mode :just)]
+    [:pos file [line col]]))
+  (def pos-excluders (seq [[mode file line col] :in exclude-targets :when (= mode :just)]
     [:pos file [line col]]))
 
   (def includes
@@ -318,6 +327,8 @@ results)
       (map |[:name-exact $] name-exact-selectors)))
   (def excludes
     (array/concat
+      file-excluders
+      pos-excluders
       (map |[:name-prefix $] name-prefix-filters)
       (map |[:name-prefix $] name-exact-filters)))
 

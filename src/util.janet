@@ -95,3 +95,11 @@
       (loop ,dsl
         (,array/concat ,$result (do ,;body)))
       ,$result)))
+
+(defn with-trailing-slash [path]
+  (if (string/has-suffix? "/" path) path (string path "/")))
+
+(defn explicit-relative-path [path]
+  (if (string/has-prefix? "/" path) path
+    (if (string/has-prefix? "./" path) path
+      (string "./" path))))
