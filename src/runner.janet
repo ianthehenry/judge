@@ -350,7 +350,11 @@ results)
   (put root-env *global-test-context* ctx)
   (put root-env colorize/*no-color* no-color)
 
-  (each file found-files
+  (defn not-excluded? [file]
+    (not (some file-excluders (fn [[_ selector]]
+      (file-selector-matches? selector file)))))
+
+  (loop [file :in found-files :when (not-excluded? file)]
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))
     (require (string prefix (util/chop-ext file))))
 

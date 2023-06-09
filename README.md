@@ -273,8 +273,8 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 ## next
 
-- You can now exclude files or tests with `--not`
-- Importing a file is no longer sufficient for tests to run
+- You can now exclude files or specific tests with `--not`
+- Importing a file is no longer sufficient to run tests in it
 
 ## v2.5.0 2023-05-18
 

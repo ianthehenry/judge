@@ -222,7 +222,24 @@ Explicit test exclusion:
   $ judge --not test.janet:5:1 -v
   ! <dim># util.janet</>
   ! running test: invisible
+  ! 
+  ! 1 passed
+
+Excluded files will not even by evaluated:
+
+  $ use erroneous.janet <<EOF
+  > this file cannot compile
+  > EOF
+
+  $ judge -v 2>&1 | head -n1
+  ! error: erroneous.janet:1:1: compile error: unknown symbol this
+  [1]
+  $ judge --not erroneous.janet -v
+  ! <dim># util.janet</>
+  ! running test: invisible
   ! <dim># test.janet</>
   ! running test: first
+  ! running test: second
   ! 
-  ! 2 passed 1 skipped
+  ! 3 passed
+
