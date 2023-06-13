@@ -111,6 +111,7 @@ specific location (which is mostly useful for editor tooling).
 
   [--help]                   : Print this help text and exit
   [-a], [--accept]           : overwrite all source files with .tested files
+  [--not FILE[:LINE:COL]]... : skip all tests in this target
   [-i], [--interactive]      : select which replacements to include
   [--not-name-exact NAME]... : skip tests whose name is exactly this prefix
   [--name-exact NAME]...     : only run tests with this exact name
