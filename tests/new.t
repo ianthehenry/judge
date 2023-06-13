@@ -155,6 +155,26 @@ Exception in test expression:
   ! 0 passed 1 failed
   [1]
 
+Control continues after an exception in a test expression:
+
+  $ use <<EOF
+  > (use judge)
+  > (deftest "hello"
+  >   (test (error "oh no") 0)
+  >   (test (+ 1 2)))
+  > EOF
+  $ judge script.janet
+  ! <dim># script.janet</>
+  ! 
+  ! (deftest "hello"
+  !   <red># oh no</>
+  !   <red>(test (error "oh no") 0)</>
+  !   <red>(test (+ 1 2))</>
+  !   <grn>(test (+ 1 2) 3)</>)
+  ! 
+  ! 0 passed 1 failed
+  [1]
+
 Unreachable test:
 
   $ use <<EOF

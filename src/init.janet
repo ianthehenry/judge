@@ -49,11 +49,13 @@
           [:ok ,$state] ((fn ,<args> ,;<body>) ,$state)
           [:error e fib] (propagate (string "failed to initialize context: " e) fib)))
       ~(do ,;<body>)))
-  ~(do
-      (:on-test-start ,(smuggle ctx) ,(smuggle test))
-      (try ,<run-test>
-         ([e fib] (,put ,(smuggle test) :error [e fib])))
-      (:on-test-end ,(smuggle ctx) ,(smuggle test))))
+  (with-syms [$result]
+    ~(do
+        (:on-test-start ,(smuggle ctx) ,(smuggle test))
+        (def ,$result (try ,<run-test>
+           ([e fib] (do (,put ,(smuggle test) :error [e fib]) nil))))
+        (:on-test-end ,(smuggle ctx) ,(smuggle test))
+        ,$result)))
 
 (defn- declare-test [<name> <test-type> <args> body]
   (when-let [ctx (dyn *global-test-context*)]
@@ -92,8 +94,12 @@
       :printer printer
       :actual @[]})
   (array/push (test :expectations) expectation)
-  ~(try (,array/push (,(smuggle expectation) :actual) ,expr)
-    ([e fib] (,put ,(smuggle expectation) :error [e fib]))))
+  (with-syms [$expr]
+    ~(try
+      (let [,$expr ,expr]
+        (,array/push (,(smuggle expectation) :actual) ,$expr)
+        ,$expr)
+      ([e fib] (,put ,(smuggle expectation) :error [e fib]) nil))))
 
 (defn- test* [<expr> <expected> stabilizer printer]
   (if-let [test (dyn *current-test*)]

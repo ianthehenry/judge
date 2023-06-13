@@ -275,6 +275,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 - You can now exclude files or specific tests with `--not`
 - Importing a file is no longer sufficient to run tests in it
+- `(test)` and friends now evaluate to the expression being tested (when running tests)
 
 ## v2.5.0 2023-05-18
 

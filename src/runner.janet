@@ -168,20 +168,25 @@ results)
       (when failed
         (put self :needs-newline-before-file-header true)
         (eprint)
-        (eprint (rewriter/string-splice test-form local-replacements))
+        (try
+          (eprint (rewriter/string-splice test-form local-replacements))
+            ([e fib]
+              (eprint (colorize/dim "# overlapping replacements"))
+              (eprint (colorize/fg :red test-form))))
         (unless (nil? (test :error))
           (:on-test-error self test))
         (unless (empty? replacement-candidates)
           (defn stage [] (array/concat (in (self :replacements) file) replacement-candidates))
-          (case (:get-verdict self test)
+          (def verdict (:get-verdict self test))
+          (case verdict
             :stage (stage)
             :stage-this-file (do (stage) (put (self :auto-verdict) file :stage))
             :skip-this-file (put (self :auto-verdict) file :skip)
             :stage-all-files (do (stage) (put self :interactive false))
             :skip nil
             :quit (:quit-gracefully self true)
-            :abort (os/exit 1))
-            (assert "don't know how to handle that yet"))))
+            :abort (os/exit 1)
+            (errorf "unknown verdict %q" verdict)))))
 
     :get-verdict (fn [self test]
       (if (self :interactive)
