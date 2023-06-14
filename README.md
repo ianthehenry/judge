@@ -207,7 +207,7 @@ This is not very useful by itself, but if you save the result of the `trust` exp
 
 Note that the result will be read as a quoted form.
 
-To re-evaluate `trust` expressions, you can either delete the expectation and re-run Judge, or run Judge with `--untrusting` to re-evaluate every `(trust)` expression.
+To re-evaluate `trust` expressions, you can either delete specific expectations and re-run Judge, or run Judge with `--untrusting` to re-evaluate all `trust` expressions.
 
 ## `test-macro`
 
