@@ -19,6 +19,7 @@ Exported symbols:
   test-error
   test-macro
   test-stdout
+  trust
 
 Installed files:
 

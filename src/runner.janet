@@ -294,6 +294,7 @@ results)
    [name-prefix-filters      --not-name] (array arg/prefix) "skip tests whose name starts with this prefix"
    [name-exact-filters --not-name-exact] (array arg/name)   "skip tests whose name is exactly this prefix"
    [exclude-targets               --not] (array arg/target) "skip all tests in this target"
+   [--untrusting -u] (flag) "re-evaluate all trust expressions"
    [--accept -a] (flag) "overwrite all source files with .tested files"
    [--interactive -i] (flag) "select which replacements to include"
    no-color (last {--color false --no-color true}) "default is --color unless the NO_COLOR environment variable is set"
@@ -342,6 +343,7 @@ results)
     :interactive interactive
     :auto-verdict @{}
     :current-file nil
+    :trusting (not untrusting)
     :needs-newline-before-file-header false
     :verbose verbose
     :tests @[]

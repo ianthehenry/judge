@@ -120,6 +120,7 @@ specific location (which is mostly useful for editor tooling).
                                prefix
   [--color], [--no-color]    : default is --color unless the NO_COLOR environment
                                variable is set
+  [-u], [--untrusting]       : re-evaluate all trust expressions
   [-v], [--verbose]          : verbose output
 ```
 
@@ -168,6 +169,45 @@ If the expression to test does not evaluate to `nil`, it will be included in the
 ```
 
 Due to ambiguity in the Janet parser for multi-line strings, a trailing newline will always be added to the output if it does not exist.
+
+## `trust`
+
+`trust` is like `test`, but the expression under test will only be evaluated if there is no expectation already. Once you accept a result, it will be re-used on all subsequent runs.
+
+```janet
+(trust (+ 1 2))
+```
+
+Will become:
+
+```janet
+(trust (+ 1 2) 3)
+```
+
+Just like `test`. But:
+
+```janet
+(trust (+ 1 2) 4)
+```
+
+Will still pass, because `trust` will not re-evaluate `(+ 1 2)` when there is already an expected value.
+
+This is not very useful by itself, but if you save the result of the `trust` expression, you can use it to write deterministic tests against impure functions that you cache literally in your source code:
+
+```janet
+(def posts 
+  (trust (download-posts-from-the-internet) 
+    [{:id 4322
+      :content "test post please ignore"}
+     {:id 4321
+      :content "is anybody here?"}]))
+(test (format-posts posts)
+  "1. test post please ignore\n2. is anybody here?")
+```
+
+Note that the result will be read as a quoted form.
+
+To re-evaluate `trust` expressions, you can either delete the expectation and re-run Judge, or run Judge with `--untrusting` to re-evaluate every `(trust)` expression.
 
 ## `test-macro`
 
@@ -277,6 +317,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 - You can now exclude files or specific tests with `--not`
 - Importing a file is no longer sufficient to run tests in it
 - `(test)` and friends now evaluate to the expression being tested (when running tests)
+- Added `(trust)`, for only evaluating an expression once, and caching the result in your source
 
 ## v2.5.0 2023-05-18
 

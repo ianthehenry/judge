@@ -211,3 +211,12 @@
   ~(defmacro ,name ,binding-form
     (,with-map (,dyn *macro-form*)
       (do ,;body))))
+
+(defmacro trust [<expr> & <expected>]
+  (def trusting
+    (if-let [ctx (dyn *global-test-context*)]
+      (ctx :trusting)
+      false))
+  (match [trusting <expected>]
+    [true [<trusted>]] (test* ['quote <trusted>] <expected> normal-stabilize normal-printer)
+    _ (test* <expr> <expected> normal-stabilize normal-printer)))

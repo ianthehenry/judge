@@ -26,6 +26,7 @@ Usage:
                                  prefix
     [--color], [--no-color]    : default is --color unless the NO_COLOR environment
                                  variable is set
+    [-u], [--untrusting]       : re-evaluate all trust expressions
     [-v], [--verbose]          : verbose output
 
   $ use test.janet <<EOF
