@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.5.0"}
+     :tag "v2.6.0"}
   ])
 ```
 
@@ -312,7 +312,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.6.0 2023-06-13
 
 - You can now exclude files or specific tests with `--not`
 - Importing a file is no longer sufficient to run tests in it
@@ -428,4 +428,3 @@ The biggest difference is that Judge now ships with a test runner script instead
 ## v0.1.0 2021-09-29
 
 Initial release of Judge. Motivation and design described in some detail [in this blog post](https://ianthehenry.com/posts/janet-game/judging-janet/).
-
