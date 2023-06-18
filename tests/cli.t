@@ -234,7 +234,7 @@ Excluded files will not even by evaluated:
 
   $ judge -v 2>&1 | head -n1
   ! error: erroneous.janet:1:1: compile error: unknown symbol this
-  [1]
+  [2]
   $ judge --not erroneous.janet -v
   ! <dim># util.janet</>
   ! running test: invisible

@@ -312,6 +312,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- Judge now exits 2 on compilation or top-level errors, so that editor tooling can distinguish this from test failures
+
 ## v2.6.0 2023-06-13
 
 - You can now exclude files or specific tests with `--not`

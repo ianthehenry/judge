@@ -228,11 +228,12 @@ results)
       (eprin-if unreachable "unreachable")
       (eprint)
 
-      (if (or (> (+ unreachable (self :failed)) 0)
-              teardown-failure
-              (= (self :passed) 0))
-        (os/exit 1)
-        (os/exit 0)))
+      (os/exit (cond
+        (> (self :errored) 0) 2
+        teardown-failure 1
+        (> (+ unreachable (self :failed)) 0) 1
+        (= (self :passed) 0) 1
+        0)))
     })
 
 (defn file-selector-matches? [selector file]
@@ -350,6 +351,7 @@ results)
     :passed 0
     :failed 0
     :skipped 0
+    :errored 0
     :test-predicate (make-test-predicate found-files includes excludes)
     :states @{}
     :file-cache @{}
@@ -363,6 +365,10 @@ results)
 
   (loop [file :in found-files :when (not-excluded? file)]
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))
-    (require (string prefix (util/chop-ext file))))
+    (try
+      (require (string prefix (util/chop-ext file)))
+      ([e fib]
+        (++ (ctx :errored))
+        (debug/stacktrace fib e ""))))
 
   (:quit-gracefully ctx false))
