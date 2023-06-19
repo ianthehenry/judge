@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.6.0"}
+     :tag "v2.6.1"}
   ])
 ```
 
@@ -312,9 +312,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.6.1 2023-06-18
 
 - Judge now exits 2 on compilation or top-level errors, so that editor tooling can distinguish this from test failures
+- Judge will continue after encountering a top-level error, and `judge --interactive` or `--accept` will still update the source file
 
 ## v2.6.0 2023-06-13
 
