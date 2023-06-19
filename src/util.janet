@@ -103,3 +103,8 @@
   (if (string/has-prefix? "/" path) path
     (if (string/has-prefix? "./" path) path
       (string "./" path))))
+
+(defn implicit-relative-path [path]
+  (if (string/has-prefix? "./" path)
+    (string/slice path 2)
+    path))

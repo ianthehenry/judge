@@ -249,4 +249,3 @@ test-error fails if nothing raises:
   ! 
   ! 0 passed 1 failed
   [1]
-

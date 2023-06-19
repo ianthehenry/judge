@@ -51,11 +51,12 @@
       ~(do ,;<body>)))
   (with-syms [$result]
     ~(do
-        (:on-test-start ,(smuggle ctx) ,(smuggle test))
+      (:on-test-start ,(smuggle ctx) ,(smuggle test))
+      (when (:should-run-test ,(smuggle ctx) ,(smuggle test))
         (def ,$result (try ,<run-test>
            ([e fib] (do (,put ,(smuggle test) :error [e fib]) nil))))
         (:on-test-end ,(smuggle ctx) ,(smuggle test))
-        ,$result)))
+        ,$result))))
 
 (defn- declare-test [<name> <test-type> <args> body]
   (when-let [ctx (dyn *global-test-context*)]

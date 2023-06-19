@@ -244,3 +244,19 @@ Excluded files will not even by evaluated:
   ! 
   ! 3 passed
 
+foo and ./foo are the same path:
+
+  $ use foo.janet <<EOF
+  > (use judge)
+  > (test (+ 1 1))
+  > EOF
+
+  $ judge foo.janet ./foo.janet
+  ! <dim># foo.janet</>
+  ! 
+  ! <red>(test (+ 1 1))</>
+  ! <grn>(test (+ 1 1) 2)</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
+

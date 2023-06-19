@@ -125,13 +125,18 @@ results)
         (eprint (colorize/dim "# " (test :file)))
         (put self :needs-newline-before-file-header false)
         (put self :current-file (test :file)))
-      (put test :ran true)
-      (when (self :verbose)
-        (eprint "running test: " (name-of test))))
+      (cond
+        (test :ran) (eprint (colorize/fgf :red "%s ran multiple times" (name-of test)))
+        (self :verbose) (eprint "running test: " (name-of test))))
+
+    :should-run-test (fn [self test]
+      (not (test :ran)))
 
     :on-test-end (fn [self test]
       (def {:expectations expectations :file file :pos pos} test)
       (var failed (truthy? (test :error)))
+
+      (put test :ran true)
 
       (def file-cache-entry (in (self :file-cache) file))
 
@@ -229,7 +234,7 @@ results)
       (eprint)
 
       (os/exit (cond
-        (> (self :errored) 0) 2
+        (not (empty? (self :files-in-error))) 2
         teardown-failure 1
         (> (+ unreachable (self :failed)) 0) 1
         (= (self :passed) 0) 1
@@ -262,14 +267,17 @@ results)
 (defn include-file? [file files-or-dirs]
   (some files-or-dirs |(file-selector-matches? $ file)))
 
-# It might would be nice to error if a predicate had no effect.
+# It might be nice to error if a predicate had no effect.
 (defn make-test-predicate [files includes excludes] (fn [ctx test]
-  (if (include-file? (test :file) files)
-    (let [include? (if (empty? includes)
-                     true
-                     (some includes |(matches ctx test $)))
-          exclude? (some excludes |(matches ctx test $))]
-      (and include? (not exclude?)))
+  (def file (test :file))
+  (cond
+    (in (ctx :files-in-error) file) :ignore
+    (include-file? file files)
+      (let [include? (if (empty? includes)
+                       true
+                       (some includes |(matches ctx test $)))
+            exclude? (some excludes |(matches ctx test $))]
+        (and include? (not exclude?)))
     :ignore)))
 
 (defn new [proto & kvs] (table/setproto (table ;kvs) proto))
@@ -319,6 +327,10 @@ results)
     (eprintf "error: %s" err)
     (os/exit 1))
 
+  # (dyn :filename) doesn't use an explicit ./, so we strip
+  # it off here so that file names are comparable
+  (def found-files (map util/implicit-relative-path found-files))
+
   (def file-excluders (seq [[mode file] :in exclude-targets :when (= mode :all)]
     [:file file]))
 
@@ -351,7 +363,7 @@ results)
     :passed 0
     :failed 0
     :skipped 0
-    :errored 0
+    :files-in-error @{}
     :test-predicate (make-test-predicate found-files includes excludes)
     :states @{}
     :file-cache @{}
@@ -363,12 +375,20 @@ results)
     (not (some file-excluders (fn [[_ selector]]
       (file-selector-matches? selector file)))))
 
-  (loop [file :in found-files :when (not-excluded? file)]
+  # If we've already seen this file, we don't want to evaluate it again.
+  # Usually requiring the file would be a no-op, because it would be cached
+  # in the module cache already. But if it raised a top-level error, it won't
+  # be cached. This only works if the file that raised a top-level error hit
+  # a test before it raised -- otherwise we have no way of knowing that the
+  # file was evaluated -- but since really all we care about is not
+  # double-executing tests, this works fine.
+  (loop [file :in found-files :when (not-excluded? file)
+        :when (not (in (ctx :file-cache) file))]
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))
     (try
       (require (string prefix (util/chop-ext file)))
       ([e fib]
-        (++ (ctx :errored))
+        (put (ctx :files-in-error) file true)
         (debug/stacktrace fib e ""))))
 
   (:quit-gracefully ctx false))
