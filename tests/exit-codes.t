@@ -10,9 +10,9 @@ exits 2 on compilation errors:
 
   $ judge
   ! error: script.janet:2:1: compile error: unknown symbol x
-  !   in dofile [boot.janet] (tailcall) on line 2899, column 7
-  !   in source-loader [boot.janet] on line 2909, column 15
-  !   in require-1 [boot.janet] (tailcall) on line 2929, column 18
+  !   in dofile [boot.janet] (tailcall) on line LINE, column COL
+  !   in source-loader [boot.janet] on line LINE, column COL
+  !   in require-1 [boot.janet] (tailcall) on line LINE, column COL
   ! 
   ! 0 passed
   [2]
@@ -28,9 +28,9 @@ exits 2 on top-level errors:
   $ judge
   ! error: something bad
   !   in _thunk [script.janet] (tailcall) on line 2, column 1
-  !   in dofile [boot.janet] (tailcall) on line 2898, column 7
-  !   in source-loader [boot.janet] on line 2909, column 15
-  !   in require-1 [boot.janet] (tailcall) on line 2929, column 18
+  !   in dofile [boot.janet] (tailcall) on line LINE, column COL
+  !   in source-loader [boot.janet] on line LINE, column COL
+  !   in require-1 [boot.janet] (tailcall) on line LINE, column COL
   ! 
   ! 0 passed
   [2]
@@ -79,17 +79,17 @@ exits 2 on top-level errors in imported files:
   evaluating file
   evaluating file
   ! error: other.janet:2:1: compile error: unknown symbol x
-  !   in dofile [boot.janet] (tailcall) on line 2899, column 7
-  !   in source-loader [boot.janet] on line 2909, column 15
-  !   in require-1 [boot.janet] on line 2929, column 18
-  !   in import* [boot.janet] (tailcall) on line 2960, column 15
-  !   in dofile [boot.janet] (tailcall) on line 2898, column 7
-  !   in source-loader [boot.janet] on line 2909, column 15
-  !   in require-1 [boot.janet] (tailcall) on line 2929, column 18
+  !   in dofile [boot.janet] (tailcall) on line LINE, column COL
+  !   in source-loader [boot.janet] on line LINE, column COL
+  !   in require-1 [boot.janet] on line LINE, column COL
+  !   in import* [boot.janet] (tailcall) on line LINE, column COL
+  !   in dofile [boot.janet] (tailcall) on line LINE, column COL
+  !   in source-loader [boot.janet] on line LINE, column COL
+  !   in require-1 [boot.janet] (tailcall) on line LINE, column COL
   ! error: other.janet:2:1: compile error: unknown symbol x
-  !   in dofile [boot.janet] (tailcall) on line 2899, column 7
-  !   in source-loader [boot.janet] on line 2909, column 15
-  !   in require-1 [boot.janet] (tailcall) on line 2929, column 18
+  !   in dofile [boot.janet] (tailcall) on line LINE, column COL
+  !   in source-loader [boot.janet] on line LINE, column COL
+  !   in require-1 [boot.janet] (tailcall) on line LINE, column COL
   ! 
   ! 0 passed
   [2]
