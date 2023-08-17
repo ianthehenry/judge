@@ -145,7 +145,7 @@ To run Judge with a normal `jpm test` invocation.
 Requires that the provided expression raises an error:
 
 ```janet
-(test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")
+(test-error (in [1 2 3] 5) "expected integer key for tuple in range [0, 3), got 5")
 ```
 
 ## `test-stdout`
@@ -253,7 +253,7 @@ You don't have to use `deftest`, though. You can create anonymous, single-expres
 
 You can write macros that wrap any of the existing test-macros using `defmacro*`. For example:
 
-```
+```janet
 (defmacro* test-loudly [exp & args]
   ~(test (string/ascii-upper ,exp) ,;args))
 

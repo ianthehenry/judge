@@ -35,7 +35,11 @@ test-error:
   $ judge
   ! <dim># script.janet</>
   ! 
-  ! 1 passed
+  ! <red>(test-error (in [1 2 3] 5) "expected integer key in range [0, 3), got 5")</>
+  ! <grn>(test-error (in [1 2 3] 5) "expected integer key for tuple in range [0, 3), got 5")</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
 
 test-macro:
 
