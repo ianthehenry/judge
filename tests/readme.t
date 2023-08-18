@@ -45,20 +45,65 @@ test-macro:
 
   $ use <<EOF
   > (use judge)
-  > (test-macro (let [x 1] x) (do (def x 1) x))
+  > (test-macro (let [x 1] x))
   > EOF
   $ judge
   ! <dim># script.janet</>
   ! 
-  ! 1 passed
+  ! <red>(test-macro (let [x 1] x))</>
+  ! <grn>(test-macro (let [x 1] x)
+  !   (do
+  !     (def x 1)
+  !     x))</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
 
 test-macro gensyms:
 
   $ use <<EOF
   > (use judge)
-  > (test-macro (and x (+ 1 2)) (if (def <1> x) (+ 1 2) <1>))
+  > (test-macro (and x (+ 1 2)))
   > EOF
   $ judge
   ! <dim># script.janet</>
   ! 
-  ! 1 passed
+  ! <red>(test-macro (and x (+ 1 2)))</>
+  ! <grn>(test-macro (and x (+ 1 2))
+  !   (if (def <1> x)
+  !     (+ 1 2)
+  !     <1>))</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
+
+test-macro
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro scope [exprs] ~(do ,;exprs))
+  > 
+  > (defmacro twice [expr]
+  >   ~(scope
+  >     ,expr
+  >     ,expr))
+  >     
+  > (test-macro (twice (print "hello")))
+  > (defmacro scope :fmt/block [exprs] ~(do ,;exprs))
+  > (test-macro (twice (print "hello")))
+  > EOF
+  $ judge
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (twice (print "hello")))</>
+  ! <grn>(test-macro (twice (print "hello"))
+  !   (scope (print "hello") (print "hello")))</>
+  ! 
+  ! <red>(test-macro (twice (print "hello")))</>
+  ! <grn>(test-macro (twice (print "hello"))
+  !   (scope
+  !     (print "hello")
+  !     (print "hello")))</>
+  ! 
+  ! 0 passed 2 failed
+  [1]

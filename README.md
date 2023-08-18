@@ -224,8 +224,54 @@ And `test-macro` will replace `gensym`'d identifiers with stable symbols:
 
 ```janet
 (test-macro (and x (+ 1 2))
-  (if (def <1> x) (+ 1 2) <1>))
+  (if (def <1> x)
+    (+ 1 2)
+    <1>))
 ```
+
+`test-macro` tries to format its output nicely, but if you've defined custom macros that you include in the expansion of the macro that you're testing, Judge won't know how to format them correctly. For example:
+
+```janet
+(defmacro scope [exprs] ~(do ,;exprs))
+
+(defmacro twice [expr]
+  ~(scope
+    ,expr
+    ,expr))
+
+(test-macro (twice (print "hello")))
+```
+
+Will produce the rather ugly:
+
+```janet
+(test-macro (twice (print "hello"))
+  (scope (print "hello") (print "hello")))
+```
+
+You can fix this by applying metadata to your macro binding that tells Judge how to format it. Let's say that `scope` should format like a block by adding the `fmt/block` metadata:
+
+```janet
+(defmacro scope :fmt/block [exprs] ~(do ,;exprs))
+
+(defmacro twice [expr]
+  ~(scope
+    ,expr
+    ,expr))
+
+(test-macro (twice (print "hello")))
+```
+
+That will produce the much nicer looking:
+
+```janet
+(test-macro (twice (print "hello"))
+  (scope
+    (print "hello")
+    (print "hello")))
+```
+
+There are only two format specifiers: `fmt/block` and `fmt/control`. A "block" macro formats like `do`: the macro name is on a line of its own. A "control" macro formats like `while`: the first argument is on its own line, and all subsequent arguments are on their own lines.
 
 ## `deftest`
 

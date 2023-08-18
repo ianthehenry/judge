@@ -41,8 +41,7 @@ test-macro simplifies gensyms:
   !   (do
   !     (def <1> x)
   !     (var <2> (@next <1> nil))
-  !     (while
-  !       (@not= nil <2>)
+  !     (while (@not= nil <2>)
   !       (def x (@in <1> <2>))
   !       (set <2> (@next <1> <2>)))))</>
   ! 
@@ -55,8 +54,7 @@ test-macro simplifies gensyms:
     (do
       (def <1> x)
       (var <2> (@next <1> nil))
-      (while
-        (@not= nil <2>)
+      (while (@not= nil <2>)
         (def x (@in <1> <2>))
         (set <2> (@next <1> <2>)))))
 
@@ -170,3 +168,98 @@ Correct macros can keep whatever crazy formatting they want:
   (test-macro (foo) (do      
   (print "one")
           (print "two")))
+
+Smartish macro formatting:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro foo [] ~(do 
+  >   (coro one two three)
+  >   (for i 0 3 (print i))
+  >   (while true (print "hi"))
+  >   (three)))
+  > (test-macro (foo))
+  > EOF
+
+  $ judge script.janet -a
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (do
+  !     (coro
+  !       one
+  !       two
+  !       three)
+  !     (for i 0 3
+  !       (print i))
+  !     (while true
+  !       (print "hi"))
+  !     (three)))</>
+  ! 
+  ! 0 passed 1 failed
+  [1]
+
+Custom macros can control how they're pretty-printed with metadata:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro foo [] ~(scope one two three))
+  > (defmacro scope [exprs] ~(do ,;exprs))
+  > (test-macro (foo))
+  > (defmacro scope :fmt/block [exprs] ~(do ,;exprs))
+  > (test-macro (foo))
+  > (defmacro scope :fmt/control [exprs] ~(do ,;exprs))
+  > (test-macro (foo))
+  > EOF
+
+  $ judge script.janet -a
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (scope one two three))</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (scope
+  !     one
+  !     two
+  !     three))</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (scope one
+  !     two
+  !     three))</>
+  ! 
+  ! 0 passed 3 failed
+  [1]
+
+Judge attempts to peer through as-macro to find macro metadata:
+
+  $ use <<EOF
+  > (use judge)
+  > (defmacro scope [exprs] ~(do ,;exprs))
+  > (defmacro foo [] ~(as-macro ,scope one two three))
+  > (test-macro (foo))
+  > (defmacro scope :fmt/block [exprs] ~(do ,;exprs))
+  > (test-macro (foo))
+  > EOF
+
+  $ judge script.janet -a
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (as-macro @scope one two three))</>
+  ! 
+  ! <red>(test-macro (foo))</>
+  ! <grn>(test-macro (foo)
+  !   (as-macro @scope
+  !     one
+  !     two
+  !     three))</>
+  ! 
+  ! 0 passed 2 failed
+  [1]

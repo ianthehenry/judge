@@ -8,34 +8,50 @@
     (type x)))
 
 # copied from spork/fmt and modified
-(def- sequencey-forms '(fn match with
-  with-dyns defn defn- varfn defmacro
-  defmacro- defer edefer loop seq tabseq
-  generate coro for each eachp eachk case
-  cond do if when when-let when-with
-  while with-syms with-vars if-let if-not
-  if-with let try unless forever upscope
-  repeat forv compwhen compif ev/spawn
-  ev/do-thread ev/with-deadline label
-  prompt))
+(def- builtin-fmt '{
+  coro 1 defer 1 edefer 1 do 1 upscope 1 forever 1
+  ev/spawn 1 ev/do-thread 1
+  fn 2 match 2 with 2 with-dyns 2 defn 2 defn- 2 varfn 2 defmacro 2
+  defmacro- 2 loop 2 seq 2 tabseq 2 castseq 2 generate 2
+  each 2 eachp 2 eachk 2 case 2 cond 2 if 2 when 2 when-let 2 when-with 2
+  while 2 with-syms 2 with-vars 2 if-let 2 if-not 2
+  if-with 2 let 2 try 2 unless 2 repeat 2 compwhen 2 compif 2
+  ev/with-deadline 2
+  label 2 prompt 2
+  for 4 forv 4 })
 
-(def- sequencey-lookup (tabseq [sym :in sequencey-forms] sym true))
-
-(defn- sequencey? [form]
-  (truthy? (in sequencey-lookup form)))
+(defn- on-first-line [form]
+  (def car (first form))
+  (when (= car 'as-macro)
+    (when-let [cadr (get form 1)]
+      (when (symbol? cadr)
+        (def macro-name (if (string/has-prefix? "@" cadr) (symbol (string/slice cadr 1)) cadr))
+        (break (+ 1 (on-first-line [macro-name ;(drop 2 form)]))))))
+  (when-let [on-first-line (in builtin-fmt car)]
+    (break on-first-line))
+  (if-let [binding (in (curenv) car)]
+    (cond
+      (binding :fmt/block) 1
+      (binding :fmt/control) 2
+      (length form))
+    (length form)))
 
 # This is pretty basic.
 (defn prindent [form indentation &opt newline]
   (prin (string/repeat " " indentation))
   (match (type+ form)
-    (:ptuple (sequencey? (first form))) (do
+    :ptuple (do
+      (def on-first-line (on-first-line form))
       (prin "(")
-      (def indentation (+ 2 indentation))
-      (eachp [i el] form
-        (prindent el
-          (if (= i 0) 0 indentation)
-          (not (util/last? i form))))
-      (prin ")"))
+      (for i 0 on-first-line
+        (prinf "%s%q" (if (= i 0) "" " ") (form i)))
+      (when (< on-first-line (length form))
+        (print))
+      (for i on-first-line (length form)
+        (def el (form i))
+        (prindent el (+ indentation 2) (not (util/last? i form))))
+      (prin ")")
+      )
     (prinf "%q" form))
   (if newline (print)))
 
