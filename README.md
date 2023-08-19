@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.6.1"}
+     :tag "v2.7.0"}
   ])
 ```
 
@@ -211,7 +211,7 @@ To re-evaluate `trust` expressions, you can either delete specific expectations 
 
 ## `test-macro`
 
-`test-macro` is just like `test`ing the result of a `macex1` expression, but it prints with slightly nicer output:
+`test-macro` is like `test`ing the result of a `macex1` expression, but the output is pretty-printed according to Janet code formatting conventions:
 
 ```janet
 (test-macro (let [x 1] x)
@@ -357,6 +357,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.7.0 2023-08-18
+
+- `test-macro` now formats its output better, and allows you to specify custom formatting metadata on your own macro definitions.
 
 ## v2.6.1 2023-06-18
 
