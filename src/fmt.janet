@@ -36,7 +36,6 @@
       (length form))
     (length form)))
 
-# This is pretty basic.
 (defn prindent [form indentation &opt newline]
   (prin (string/repeat " " indentation))
   (match (type+ form)
@@ -50,8 +49,7 @@
       (for i on-first-line (length form)
         (def el (form i))
         (prindent el (+ indentation 2) (not (util/last? i form))))
-      (prin ")")
-      )
+      (prin ")"))
     (prinf "%q" form))
   (if newline (print)))
 
