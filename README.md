@@ -358,6 +358,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## v2.7.1 2023-11-18
+
+- updated dependencies
+
 ## v2.7.0 2023-08-18
 
 - `test-macro` now formats its output better, and allows you to specify custom formatting metadata on your own macro definitions.
