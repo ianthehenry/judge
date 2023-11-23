@@ -45,6 +45,7 @@ results)
   (if (deep= current-file-contents source)
     (do
       (os/chmod corrected-filename file-permissions)
+      # On Windows, os/rename will fail if the destination already exists.
       (os/rm original-filename)
       (os/rename corrected-filename original-filename))
     (eprint
