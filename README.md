@@ -358,6 +358,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- accepting corrections now works on Windows
+
 ## v2.7.1 2023-11-18
 
 - updated dependencies
