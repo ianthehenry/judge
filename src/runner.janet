@@ -45,6 +45,7 @@ results)
   (if (deep= current-file-contents source)
     (do
       (os/chmod corrected-filename file-permissions)
+      (os/rm original-filename)
       (os/rename corrected-filename original-filename))
     (eprint
       (colorize/fgf :red "%s changed since test runner began; refusing to overwrite"
