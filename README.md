@@ -358,10 +358,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## v2.7.2
+## v2.7.2 2023-12-03
 
 - accepting corrections now works on Windows
-- fixed a bug where `(test mutable-value)` inside `deftest` would show the value as it existed at the end of the `deftest` block, rather than
+- fixed a bug where `(test mutable-value)` inside `(deftest)` would show the value as it existed at the end of the entire test, rather than the moment of the `(test)` expression
 
 ## v2.7.1 2023-11-18
 
