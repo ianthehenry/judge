@@ -87,6 +87,14 @@
         :reset ,reset
         :teardown ,teardown})))
 
+(defn- clone [x]
+  (match (type x)
+    :buffer (buffer/slice x)
+    :abstract (try (unmarshal (marshal x)) ([&] x))
+    :table (walk clone x)
+    :array (walk clone x)
+    x))
+
 (defn- actual-expectation [test expr expected stabilizer printer]
   (def expectation
     @{:expected expected
@@ -98,7 +106,7 @@
   (with-syms [$expr]
     ~(try
       (let [,$expr ,expr]
-        (,array/push (,(smuggle expectation) :actual) ,$expr)
+        (,array/push (,(smuggle expectation) :actual) (,clone ,$expr))
         ,$expr)
       ([e fib] (,put ,(smuggle expectation) :error [e fib]) nil))))
 
