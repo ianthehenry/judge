@@ -358,14 +358,22 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.8.0 2023-12-09
 
 - if a `(test)` form spans multiple lines, the suggested correction will always appear on its own line. This allows you to format tests more like a REPL session:
   
   ```janet
   (test
+    (+ 1 2))
+
+  # will now produce:
+  (test
     (+ 1 2)
     3)
+
+  # instead of:
+  (test
+      (+ 1 2) 3)
   ```
 
 ## v2.7.2 2023-12-03
