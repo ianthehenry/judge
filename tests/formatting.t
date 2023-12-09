@@ -157,3 +157,85 @@ Does not distinguish bracketed tuples:
   ! <dim># script.janet</>
   ! 
   ! 1 passed
+
+Long output starts on its own line:
+
+  $ use <<EOF
+  > (use judge)
+  > (test (array/new-filled 10 100))
+  > (test 
+  >   (array/new-filled 10 100))
+  > EOF
+  $ judge >/dev/null
+  [1]
+  $ show_tested
+  (use judge)
+  (test (array/new-filled 10 100)
+    @[100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100])
+  (test 
+    (array/new-filled 10 100)
+    @[100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100])
+
+Number of backticks does not affect the indentation of subsequent forms using the stdout printer:
+
+  $ use <<EOF
+  > (use judge)
+  > (test-stdout (do (print "\`\`\`") (array/new-filled 10 100)))
+  > EOF
+  $ judge >/dev/null
+  [1]
+  $ show_tested
+  (use judge)
+  (test-stdout (do (print "```") (array/new-filled 10 100)) ````
+    ```
+  ````
+    @[100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100
+      100])
+
+Short output starts on its own line iff the test form spans multiple lines:
+
+  $ use <<EOF
+  > (use judge)
+  > (test [1 2 3])
+  > (test [1 2 3
+  >  ])
+  > (test
+  >   [1 2 3])
+  > EOF
+  $ judge >/dev/null
+  [1]
+  $ show_tested
+  (use judge)
+  (test [1 2 3] [1 2 3])
+  (test [1 2 3
+   ]
+    [1 2 3])
+  (test
+    [1 2 3]
+    [1 2 3])

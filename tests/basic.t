@@ -93,9 +93,10 @@ Preserves formatting before result:
   (use judge)
   (deftest "test"
     (test (+ 1
-       2) 3))
+       2)
+      3))
 
-Does not preserves position of failing result:
+Does not preserve position of failing result:
 
   $ use <<EOF
   > (use judge)
@@ -111,7 +112,8 @@ Does not preserves position of failing result:
   (use judge)
   (deftest "test"
     (test [1
-          2] [1 2]))
+          2]
+      [1 2]))
 
 Does not preserve formatting of incorrect result:
 
@@ -130,7 +132,8 @@ Does not preserve formatting of incorrect result:
   (use judge)
   (deftest "test"
     (test [1
-          2] [1 2]))
+          2]
+      [1 2]))
 
 Does not re-format correct results:
 

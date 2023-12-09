@@ -26,7 +26,7 @@ results)
     :error err
     :printer printer
     :stabilizer stabilizer
-    }]
+    } get-full-form]
   (cond
     (truthy? err) (let [[err fib] err] [err nil])
     (empty? actual) ["did not reach expectation" nil]
@@ -34,8 +34,10 @@ results)
     (let [stabilized (stabilizer (first actual))]
       (unless (deep= stabilized expected)
         (def pos (tuple/sourcemap form))
+        (def [byte-index form-src] (get-full-form))
+        (def multiline? (not= nil (string/find "\n" form-src)))
         (def [line col] pos)
-        [nil (printer col ;stabilized)]))))
+        [nil (printer col multiline? ;stabilized)]))))
 
 (defn safely-accept-corrections
   [&named corrected-filename original-filename
@@ -146,10 +148,11 @@ results)
       (def local-replacements @[])
       (def replacement-candidates @[])
       (each expectation expectations
-        (when-let [[err replacement] (expectation-error expectation)]
+        (def epos (tuple/sourcemap (expectation :form)))
+        (def get-full-form (util/lazy (rewriter/get-form file-cache-entry epos)))
+        (when-let [[err replacement] (expectation-error expectation get-full-form)]
           (set failed true)
-          (def epos (tuple/sourcemap (expectation :form)))
-          (def [byte-index original-form] (rewriter/get-form file-cache-entry epos))
+          (def [byte-index original-form] (get-full-form))
           (array/push local-replacements [
             (- byte-index file-offset)
             (length original-form)

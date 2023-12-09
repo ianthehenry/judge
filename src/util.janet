@@ -108,3 +108,15 @@
   (if (string/has-prefix? "./" path)
     (string/slice path 2)
     path))
+
+(defmacro lazy [& body]
+  (with-syms [$f $forced? $result]
+    ~(do
+      (def ,$f (fn [] ,;body))
+      (var ,$forced? false)
+      (var ,$result nil)
+      (fn []
+        (unless ,$forced?
+          (set ,$result (,$f))
+          (set ,$forced? true))
+        ,$result))))

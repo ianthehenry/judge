@@ -45,4 +45,4 @@ Installed files:
   |       `-- util.janet
   `-- man
   
-  5 directories, 14 files
+  6 directories, 14 files

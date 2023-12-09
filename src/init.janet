@@ -117,10 +117,16 @@
 
 (defn- normal-stabilize [node] [(util/stabilize node)])
 
-(defn- normal-printer [col form]
-  (fmt/to-string-pretty form (+ col 1)))
+(defn- normal-printer [col multiline-expectation form]
+  (def indentation (+ col 1))
+  (def output (fmt/to-string-pretty form indentation))
+  (if multiline-expectation
+    (if (string/has-prefix? "\n" output)
+      output
+      (string "\n" (string/repeat " " indentation) output))
+    output))
 
-(defn- macro-printer [col form]
+(defn- macro-printer [col _ form]
   (def buf @"\n")
   (with-dyns [*out* buf]
     (fmt/prindent form (+ col 1)))
@@ -168,11 +174,13 @@
     (if (= col 1) "\n")
     delimiter))
 
-(defn- stdout-printer [col output &opt form]
+(defn- stdout-printer [col multiline-expectation output &opt form]
   (def output (backtick-quote output col))
   (if (nil? form)
     output
-    (string/format "%s %s" output (normal-printer col form))))
+    (let [form-output (normal-printer col multiline-expectation form)
+          space (if (string/has-prefix? "\n" form-output) "" " ")]
+      (string/format "%s%s%s" output space form-output))))
 
 (defn- ensure-trailing-newline [str]
   (if (string/has-suffix? "\n" str)
