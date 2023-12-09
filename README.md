@@ -373,7 +373,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
   # instead of:
   (test
-      (+ 1 2) 3)
+    (+ 1 2) 3)
   ```
 
 ## v2.7.2 2023-12-03
