@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.7.0"}
+     :tag "v2.8.1"}
   ])
 ```
 
@@ -357,6 +357,11 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.8.1 2023-12-27
+
+- fixed a bug where expectations containing structs or tables with tuple keys might not round-trip correctly
+- fixed a bug where mutable values inside tuples or structs might not print with the correct results inside a `deftest` clause that mutates those values
 
 ## v2.8.0 2023-12-09
 
