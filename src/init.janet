@@ -93,6 +93,8 @@
     :abstract (try (unmarshal (marshal x)) ([&] x))
     :table (walk clone x)
     :array (walk clone x)
+    :tuple (walk clone x)
+    :struct (walk clone x)
     x))
 
 (defn- actual-expectation [test expr expected stabilizer printer]
