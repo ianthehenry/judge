@@ -87,14 +87,39 @@
         :reset ,reset
         :teardown ,teardown})))
 
+# This transformation ensures that the tuple keys of structs
+# and tables are always square-bracketed.
+#
+# This is because, while square bracket tuples are deep= to
+# round bracket tuples, they have different hash values, so
+# associative structures might sort them in different orders.
+#
+# For example:
+#
+# repl:1:> (deep= @{[0 1] 1 [1 2] 2} @{'[0 1] 1 '[1 2] 2})
+# true
+# repl:2:> (deep= @{[0 1] 1 [1 2] 2 [2 3] 3} @{'[0 1] 1 '[1 2] 2 '[2 3] 3})
+# false
+#
+# Converting the keys to square brackets means that you lose some
+# information, but it's exactly the information that will be lost when
+# the expectation is read back in as a quoted form.
+#
+# This is evidence that judge's cosmetic square-bracketing of all tuples
+# might be a mistake.
+(defn- square-keys [dict]
+  (def chill (if (struct? dict) table/to-struct identity))
+  (chill (tabseq [[k v] :pairs dict]
+    (if (tuple? k) (tuple/brackets ;k) k) v)))
+
 (defn- clone [x]
   (match (type x)
     :buffer (buffer/slice x)
     :abstract (try (unmarshal (marshal x)) ([&] x))
-    :table (walk clone x)
+    :table (square-keys (walk clone x))
+    :struct (square-keys (walk clone x))
     :array (walk clone x)
     :tuple (walk clone x)
-    :struct (walk clone x)
     x))
 
 (defn- actual-expectation [test expr expected stabilizer printer]
