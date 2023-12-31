@@ -19,6 +19,12 @@
       nil (array/push results [(string/format "could not read %q" path)])))
 results)
 
+(defn- stacktrace [err fib]
+  (def buf @"")
+  (with-dyns [*err* buf]
+    (debug/stacktrace fib err ""))
+  (string/trim buf))
+
 (defn- expectation-error
   [{:actual actual
     :expected expected
@@ -28,7 +34,7 @@ results)
     :stabilizer stabilizer
     } get-full-form]
   (cond
-    (truthy? err) (let [[err fib] err] [err nil])
+    (truthy? err) (let [[err fib] err] [(stacktrace err fib) nil])
     (empty? actual) ["did not reach expectation" nil]
     (not (util/deep-same? actual)) ["inconsistent results" nil]
     (let [stabilized (stabilizer (first actual))]
@@ -158,7 +164,7 @@ results)
             (length original-form)
             (if err
               (string
-                 (colorize/fg :red "# " err)
+                 (colorize/fg :red (prefix-lines "# " err))
                  "\n"
                  (string/repeat " " (- (in epos 1) 1))
                  (colorize/fg :red original-form))

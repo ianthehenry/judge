@@ -149,7 +149,8 @@ Exception in test expression:
   ! <dim># script.janet</>
   ! 
   ! (deftest "hello"
-  !   <red># oh no</>
+  !   <red># error: oh no
+  ! #   in <anonymous> [script.janet] on line 2, column 1</>
   !   <red>(test (error "oh no") 0)</>)
   ! 
   ! 0 passed 1 failed
@@ -167,7 +168,8 @@ Control continues after an exception in a test expression:
   ! <dim># script.janet</>
   ! 
   ! (deftest "hello"
-  !   <red># oh no</>
+  !   <red># error: oh no
+  ! #   in <anonymous> [script.janet] on line 2, column 1</>
   !   <red>(test (error "oh no") 0)</>
   !   <red>(test (+ 1 2))</>
   !   <grn>(test (+ 1 2) 3)</>)
@@ -334,7 +336,8 @@ test-error:
   ! <grn>(test-error (error "hello") "hello")</>
   ! 
   ! (deftest "okay"
-  !   <red># did not error</>
+  !   <red># error: did not error
+  ! #   in <anonymous> [script.janet] on line 3, column 1</>
   !   <red>(test-error (+ 1 2) 0)</>)
   ! 
   ! 0 passed 2 failed

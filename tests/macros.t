@@ -75,7 +75,10 @@ Macros that raise are gracefully handled:
   $ judge script.janet
   ! <dim># script.janet</>
   ! 
-  ! <red># oh no</>
+  ! <red># error: oh no
+  ! #   in oh-no [script.janet] (tailcall) on line LINE, column COL
+  ! #   in macex1 [boot.janet] on line LINE, column COL
+  ! #   in <anonymous> [script.janet] on line 3, column 1</>
   ! <red>(test-macro (oh-no))</>
   ! 
   ! 0 passed 1 failed

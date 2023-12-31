@@ -358,6 +358,10 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
+## next
+
+- top-level errors now print full stack traces
+
 ## v2.8.1 2023-12-27
 
 - fixed a bug where expectations containing structs or tables with tuple keys might not round-trip correctly

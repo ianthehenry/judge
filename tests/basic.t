@@ -247,7 +247,8 @@ test-error fails if nothing raises:
   ! <dim># script.janet</>
   ! 
   ! (deftest "errors"
-  !   <red># did not error</>
+  !   <red># error: did not error
+  ! #   in <anonymous> [script.janet] on line 2, column 1</>
   !   <red>(test-error 123)</>)
   ! 
   ! 0 passed 1 failed
