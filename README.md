@@ -358,7 +358,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 # Changelog
 
-## next
+## v2.8.2 2024-01-04
 
 - fixed a bug where `test`ing a cyclic data structure would cause judge to infinitely loop
 - fixed various problems with floating point numbers not round-tripping
