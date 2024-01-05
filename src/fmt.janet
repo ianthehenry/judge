@@ -133,12 +133,27 @@
       (surround open close))
     (as-single-line pretty-elements open close)))
 
+# If the simpler representation round-trips,
+# don't use the potentially longer .17g expansion,
+# even if it is a more precise decimal expansion of
+# the actual floating point number
+(defn float-to-string-round-trippable [num]
+  (def simple-candidate (string num))
+  (if (= (scan-number simple-candidate) num)
+    simple-candidate
+    (cond
+      (= num math/inf) "9e999"
+      (= num (- math/inf)) "-9e999"
+      # LDBL_DIG - 1 (for the leading zero) = 17
+      (string/format "%.17g" num))))
+
 (varfn prettify [element]
   (case (type element)
     :tuple (prettify-list element)
     :array (prettify-list element)
     :table (prettify-pairs element)
     :struct (prettify-pairs element)
+    :number [[0 (float-to-string-round-trippable element)]]
     [[0 (string/format "%q" element)]]))
 
 (defn prin-lines [lines]

@@ -360,6 +360,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 ## next
 
+- fixed various problems with floating point numbers not round-tripping
 - top-level errors now print full stack traces
 
 ## v2.8.1 2023-12-27

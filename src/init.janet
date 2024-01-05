@@ -112,14 +112,20 @@
   (chill (tabseq [[k v] :pairs dict]
     (if (tuple? k) (tuple/brackets ;k) k) v)))
 
-(defn- clone [x]
+# this doesn't just clone the value, but
+# clones it in such a way that its representation
+# round-trips. so we remove any nans, and change
+# round brackets to square brackets when they appear
+# as dictionary keys.
+(defn- stably-clone [x]
   (match (type x)
     :buffer (buffer/slice x)
     :abstract (try (unmarshal (marshal x)) ([&] x))
-    :table (square-keys (walk clone x))
-    :struct (square-keys (walk clone x))
-    :array (walk clone x)
-    :tuple (walk clone x)
+    :table (square-keys (walk stably-clone x))
+    :struct (square-keys (walk stably-clone x))
+    :array (walk stably-clone x)
+    :tuple (walk stably-clone x)
+    :number (if (nan? x) 'math/nan x)
     x))
 
 (defn- actual-expectation [test expr expected stabilizer printer]
@@ -133,7 +139,7 @@
   (with-syms [$expr]
     ~(try
       (let [,$expr ,expr]
-        (,array/push (,(smuggle expectation) :actual) (,clone ,$expr))
+        (,array/push (,(smuggle expectation) :actual) (,stably-clone ,$expr))
         ,$expr)
       ([e fib] (,put ,(smuggle expectation) :error [e fib]) nil))))
 
