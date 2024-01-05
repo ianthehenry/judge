@@ -117,16 +117,24 @@
 # round-trips. so we remove any nans, and change
 # round brackets to square brackets when they appear
 # as dictionary keys.
-(defn- stably-clone [x]
+(defn- stably-clone-aux [see x]
+  (def stably-clone (partial stably-clone-aux see))
   (match (type x)
     :buffer (buffer/slice x)
     :abstract (try (unmarshal (marshal x)) ([&] x))
-    :table (square-keys (walk stably-clone x))
+    :table (do (see x) (square-keys (walk stably-clone x)))
     :struct (square-keys (walk stably-clone x))
-    :array (walk stably-clone x)
+    :array (do (see x) (walk stably-clone x))
     :tuple (walk stably-clone x)
     :number (if (nan? x) 'math/nan x)
     x))
+
+(defn- stably-clone [x]
+  (def seen @{})
+  (stably-clone-aux (fn [mutable-value]
+    (if (seen mutable-value)
+      (error "Cycle detected! Judge is not currently smart enough to round-trip cyclic data structures.")
+      (put seen mutable-value true))) x))
 
 (defn- actual-expectation [test expr expected stabilizer printer]
   (def expectation

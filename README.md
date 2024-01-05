@@ -360,6 +360,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 
 ## next
 
+- fixed a bug where `test`ing a cyclic data structure would cause judge to infinitely loop
 - fixed various problems with floating point numbers not round-tripping
 - top-level errors now print full stack traces
 
