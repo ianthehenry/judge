@@ -12,7 +12,7 @@ Cyclic data structures don't cause an infinite loop:
   ! <dim># script.janet</>
   ! 
   ! <red># error: Cycle detected! Judge is not currently smart enough to round-trip cyclic data structures.
-  ! #   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 136, column 7
+  ! #   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 135, column 7
   ! #   in stably-clone-aux [$PWD/jpm_tree/lib/judge/init.janet] (tailcall) on line LINE, column COL
   ! #   in walk-dict [boot.janet] (tailcall) on line LINE, column COL
   ! #   in stably-clone-aux [$PWD/jpm_tree/lib/judge/init.janet] (tailcall) on line LINE, column COL

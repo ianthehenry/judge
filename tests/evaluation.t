@@ -55,7 +55,7 @@ If a test expression raises it returns nil, because we can't propagate the excep
   ! <dim># script.janet</>
   ! 
   ! <red># error: hi
-  ! #   in <anonymous> [script.janet] on line 2, column 5</>
+  ! #   in <anonymous> [script.janet] on line 2, column 11</>
   !     <red>(test (error "hi"))</>
   ! 
   ! 0 passed 1 failed
@@ -76,7 +76,7 @@ Named test that raises returns nil:
   !                                                   <red>(test 2 2)</> "done")
   ! 
   ! error: oh no
-  !   in <anonymous> [script.janet] on line 2, column 5
+  !   in <anonymous> [script.janet] on line 2, column 35
   ! 
   ! 0 passed 1 failed
   [1]

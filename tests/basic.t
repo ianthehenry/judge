@@ -161,7 +161,7 @@ Uncaught exceptions cause tests to fail:
   !   (error "oh no"))
   ! 
   ! error: oh no
-  !   in <anonymous> [script.janet] on line 2, column 1
+  !   in <anonymous> [script.janet] on line 3, column 3
   ! 
   ! 0 passed 1 failed
   [1]

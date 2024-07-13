@@ -49,7 +49,7 @@ Tests don't run if something fails:
   ! 
   ! error: failed to initialize context: oh no
   !   in <anonymous> [script.janet] on line 3, column 17
-  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 32, column 17
+  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 31, column 17
   !   in <anonymous> [script.janet] on line 5, column 1
   ! 
   ! (deftest: erroneous-setup "another test that will be skipped" [_]
@@ -57,7 +57,7 @@ Tests don't run if something fails:
   ! 
   ! error: failed to initialize context: oh no
   !   in <anonymous> [script.janet] on line 3, column 17
-  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 32, column 17
+  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 31, column 17
   !   in <anonymous> [script.janet] on line 8, column 1
   ! 
   ! 0 passed 2 failed
@@ -91,7 +91,7 @@ No tests of this type can run after a reset failure:
   ! 
   ! error: failed to initialize context: oh dear
   !   in <anonymous> [script.janet] on line 6, column 5
-  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 37, column 18
+  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 36, column 18
   !   in <anonymous> [script.janet] on line 8, column 1
   ! 
   ! (deftest: erroneous-reset "test not attempted" [_]
@@ -99,7 +99,7 @@ No tests of this type can run after a reset failure:
   ! 
   ! error: failed to initialize context: oh dear
   !   in <anonymous> [script.janet] on line 6, column 5
-  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 37, column 18
+  !   in <anonymous> [$PWD/jpm_tree/lib/judge/init.janet] on line 36, column 18
   !   in <anonymous> [script.janet] on line 11, column 1
   ! 
   ! 0 passed 2 failed
