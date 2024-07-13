@@ -4,7 +4,6 @@
 
 (def- *current-test* (gensym))
 
-(defn- smuggle [expr] ~(,|expr))
 (defn- ignore [&] nil)
 
 (defn- make-test [ctx <name>]
@@ -45,17 +44,17 @@
   (def <run-test>
     (if <test-type>
       (with-syms [$state]
-        ~(match (,get-state ,(smuggle ctx) ,<test-type>)
+        ~(match (,get-state ',ctx ,<test-type>)
           [:ok ,$state] ((fn ,<args> ,;<body>) ,$state)
           [:error e fib] (propagate (string "failed to initialize context: " e) fib)))
       ~(do ,;<body>)))
   (with-syms [$result]
     ~(do
-      (:on-test-start ,(smuggle ctx) ,(smuggle test))
-      (when (:should-run-test ,(smuggle ctx) ,(smuggle test))
+      (:on-test-start ',ctx ',test)
+      (when (:should-run-test ',ctx ',test)
         (def ,$result (try ,<run-test>
-           ([e fib] (do (,put ,(smuggle test) :error [e fib]) nil))))
-        (:on-test-end ,(smuggle ctx) ,(smuggle test))
+           ([e fib] (do (,put ',test :error [e fib]) nil))))
+        (:on-test-end ',ctx ',test)
         ,$result))))
 
 (defn- declare-test [<name> <test-type> <args> body]
@@ -147,9 +146,9 @@
   (with-syms [$expr]
     ~(try
       (let [,$expr ,expr]
-        (,array/push (,(smuggle expectation) :actual) (,stably-clone ,$expr))
+        (,array/push (',expectation :actual) (,stably-clone ,$expr))
         ,$expr)
-      ([e fib] (,put ,(smuggle expectation) :error [e fib]) nil))))
+      ([e fib] (,put ',expectation :error [e fib]) nil))))
 
 (defn- test* [<expr> <expected> stabilizer printer]
   (if-let [test (dyn *current-test*)]
