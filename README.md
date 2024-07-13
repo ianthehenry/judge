@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.8.1"}
+     :tag "v2.8.3"}
   ])
 ```
 
@@ -357,6 +357,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.8.3 2024-07-12
+
+- added `defmacro*-`, as a sourcemap-preserving version of `defmacro-`
 
 ## v2.8.2 2024-01-04
 
