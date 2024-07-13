@@ -269,6 +269,11 @@
     (,with-map (,dyn *macro-form*)
       (do ,;body))))
 
+(defmacro defmacro*- [name binding-form & body]
+  ~(defmacro- ,name ,binding-form
+    (,with-map (,dyn *macro-form*)
+      (do ,;body))))
+
 (defmacro trust [<expr> & <expected>]
   (def trusting
     (if-let [ctx (dyn *global-test-context*)]

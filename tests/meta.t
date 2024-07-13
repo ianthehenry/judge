@@ -12,6 +12,7 @@ Exported symbols:
   > EOF
   $ run
   defmacro*
+  defmacro*-
   deftest
   deftest-type
   deftest:
