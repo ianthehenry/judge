@@ -116,24 +116,30 @@
 # round-trips. so we remove any nans, and change
 # round brackets to square brackets when they appear
 # as dictionary keys.
-(defn- stably-clone-aux [see x]
-  (def stably-clone (partial stably-clone-aux see))
+(defmacro- witness [seen value & body]
+  (with-syms [$seen $value $result]
+    ~(let [,$seen ,seen ,$value ,value]
+      (if (,in ,$seen ,$value)
+        '<cycle>
+        (do
+          (put ,$seen ,$value true)
+          (def ,$result (do ,;body))
+          (put ,$seen ,$value nil)
+          ,$result)))))
+
+(defn- stably-clone-aux [seen x]
+  (def stably-clone (partial stably-clone-aux seen))
   (match (type x)
     :buffer (buffer/slice x)
     :abstract (try (unmarshal (marshal x)) ([&] x))
-    :table (do (see x) (square-keys (walk stably-clone x)))
+    :table (witness seen x (square-keys (walk stably-clone x)))
     :struct (square-keys (walk stably-clone x))
-    :array (do (see x) (walk stably-clone x))
+    :array (witness seen x (walk stably-clone x))
     :tuple (walk stably-clone x)
     :number (if (nan? x) 'math/nan x)
     x))
 
-(defn- stably-clone [x]
-  (def seen @{})
-  (stably-clone-aux (fn [mutable-value]
-    (if (seen mutable-value)
-      (error "Cycle detected! Judge is not currently smart enough to round-trip cyclic data structures.")
-      (put seen mutable-value true))) x))
+(defn- stably-clone [x] (stably-clone-aux @{} x))
 
 (defn- actual-expectation [test expr expected stabilizer printer]
   (def expectation
