@@ -39,30 +39,36 @@
 (defn peg-replace [pat f str]
   (first (peg/match ~(* (% (any (+ (/ (<- ,pat) ,f) (<- 1)))) -1) str)))
 
+(defn- gensymbly? [sym]
+  (and
+    (symbol? sym)
+    (= (length sym) 7)
+    (string/has-prefix? "_0" sym)))
+
 (defn stabilize [node]
-  (var i 1)
   (def hex-cache @{})
-  (def uniquify (fn [str]
-    (get-or-put hex-cache str
-      (let [x (string/format " 0x%d>" i)] (++ i) x))))
-  (defn to-stable-string [node]
-    (peg-replace ~(* " 0x" :h+ ">") uniquify (string node)))
+  (def gensym-cache @{})
+  (def uniquify-hex (fn [str]
+    (get-or-put hex-cache str (string/format " 0x%d>" (inc (length hex-cache))))))
+  (defn stabilize-hex [node]
+    (peg-replace ~(* " 0x" :h+ ">") uniquify-hex (string node)))
   (defn stable-function [name] (symbol "@" name))
-  (defn recur [node]
+  (prewalk (fn [node]
     (cond
-      (abstract? node) (to-stable-string node)
+      (gensymbly? node) (get-or-put gensym-cache node (symbol "<" (inc (length gensym-cache)) ">"))
+      (abstract? node) (stabilize-hex node)
       (cfunction? node)
         # there's no programmatic way to get the
         # name of a cfunction
         (if-let [sym (in make-image-dict node)]
           (stable-function sym)
-          (to-stable-string node))
+          (stabilize-hex node))
       (function? node)
         (if-let [name (disasm node :name)]
           (stable-function name)
-          (to-stable-string node))
-      (walk recur node)))
-  (recur node))
+          (stabilize-hex node))
+      node))
+    node))
 
 (defn but-last [t]
   (tuple/slice t 0 (- (length t) 1)))

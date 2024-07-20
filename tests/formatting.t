@@ -51,6 +51,25 @@ Pointers are replaced with unique strings:
   ! 0 passed 3 failed
   [1]
 
+Gensyms are replaced with stable identifiers:
+
+  $ use <<EOF
+  > (use judge)
+  > (test (fn []))
+  > (test [(gensym) (gensym)])
+  > EOF
+  $ judge -a
+  ! <dim># script.janet</>
+  ! 
+  ! <red>(test (fn []))</>
+  ! <grn>(test (fn []) "<function 0x1>")</>
+  ! 
+  ! <red>(test [(gensym) (gensym)])</>
+  ! <grn>(test [(gensym) (gensym)] [<1> <2>])</>
+  ! 
+  ! 0 passed 2 failed
+  [1]
+
 Distinguishes mutable and immutable types:
 
   $ use <<EOF

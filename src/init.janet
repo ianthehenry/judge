@@ -178,25 +178,6 @@
     (fmt/prindent form (+ col 1)))
   buf)
 
-(defn- gensymbly? [sym]
-  (and
-    (symbol? sym)
-    (= (length sym) 7)
-    (string/has-prefix? "_0" sym)))
-
-(defn- macro-stabilize [form]
-  (var i 1)
-  (def syms @{})
-
-  (defn recur [node]
-    (if (gensymbly? node)
-      (util/get-or-put syms node (do
-        (let [sym (symbol "<" i ">")]
-          (++ i)
-          sym)))
-      (walk recur node)))
-  [(recur (util/stabilize form))])
-
 (def- backticks (peg/compile ~(any (+ (<- (some "`")) 1))))
 
 (defn- indent [str col]
@@ -254,7 +235,7 @@
   (test* (util/get-error <expr>) <expected> normal-stabilize normal-printer))
 
 (defmacro test-macro [<expr> & <expected>]
-  (test* ~(,macex1 ',<expr>) <expected> macro-stabilize macro-printer))
+  (test* ~(,macex1 ',<expr>) <expected> normal-stabilize macro-printer))
 
 (defmacro test-stdout [<expr> & <expected>]
   (def [line col] (tuple/sourcemap (dyn *macro-form*)))
