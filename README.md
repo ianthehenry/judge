@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.8.4"}
+     :tag "v2.9.0"}
   ])
 ```
 
@@ -357,6 +357,10 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.9.0 2024-07-19
+
+- Judge now replaces `gensym`bols with stable identifiers like `<1>` in all test functions. In previous versions, only `test-macro` did this stabilization.
 
 ## v2.8.4 2024-07-18
 
