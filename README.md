@@ -95,7 +95,7 @@ Judge distributes a runner executable called `judge`. When you install Judge usi
 
 So that you can just run it as `judge`.
 
-```
+```console
 $ judge --help
 Test runner for Judge.
 
@@ -123,14 +123,6 @@ specific location (which is mostly useful for editor tooling).
   [-u], [--untrusting]       : re-evaluate all trust expressions
   [-v], [--verbose]          : verbose output
 ```
-
-You can also add this to your `project.janet` file:
-
-```janet
-(task "test" [] (shell "jpm_tree/bin/judge"))
-```
-
-To run Judge with a normal `jpm test` invocation.
 
 # Writing tests
 
@@ -195,8 +187,8 @@ Will still pass, because `trust` will not re-evaluate `(+ 1 2)` when there is al
 This is not very useful by itself, but if you save the result of the `trust` expression, you can use it to write deterministic tests against impure functions that you cache literally in your source code:
 
 ```janet
-(def posts 
-  (trust (download-posts-from-the-internet) 
+(def posts
+  (trust (download-posts-from-the-internet)
     [{:id 4322
       :content "test post please ignore"}
      {:id 4321
@@ -384,7 +376,7 @@ Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a
 ## v2.8.0 2023-12-09
 
 - if a `(test)` form spans multiple lines, the suggested correction will always appear on its own line. This allows you to format tests more like a REPL session:
-  
+
   ```janet
   (test
     (+ 1 2))
@@ -481,7 +473,7 @@ The biggest difference is that Judge now ships with a test runner script instead
     # v1
     (test "basic math"
       (expect (+ 1 1) 2))
-    
+
     # v2
     (deftest "basic math"
       (test (+ 1 1) 2))
