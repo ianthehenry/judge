@@ -7,7 +7,7 @@ Judge is a library for writing inline snapshot tests in [Janet](https://github.c
 (declare-project
   :dependencies [
     {:url "https://github.com/ianthehenry/judge.git"
-     :tag "v2.10.0"}
+     :tag "v2.11.0"}
   ])
 ```
 
@@ -385,6 +385,11 @@ It's important that reset *actually* resets the test state, so that it doesn't m
 Judge itself is tested using [cram](https://bitheap.org/cram/), so you'll need a working Python distribution.
 
 # Changelog
+
+## v2.11.0 2026-02-25
+
+- judge no longer ignores explicitly listed files missing the `.janet` extension
+- judge now requires Janet v1.41, due to the module loader path improvements
 
 ## v2.10.0 2025-09-01
 

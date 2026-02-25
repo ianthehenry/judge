@@ -29,6 +29,21 @@ Usage:
     [-u], [--untrusting]       : re-evaluate all trust expressions
     [-v], [--verbose]          : verbose output
 
+judge works on files with non-janet extensions, if explicitly specified:
+
+  $ use foo <<EOF
+  > (use judge)
+  > (test (+ 1 1) 2)
+  > EOF
+  $ judge
+  ! 
+  ! 0 passed
+  [1]
+  $ judge foo
+  ! <dim># foo</>
+  ! 
+  ! 1 passed
+
   $ use test.janet <<EOF
   > (use judge)
   > (deftest "first"
@@ -260,3 +275,23 @@ foo and ./foo are the same path:
   ! 0 passed 1 failed
   [1]
 
+absolute paths work, but have different module cache entries than relative paths:
+
+  $ use foo.janet <<EOF
+  > (use judge)
+  > (test (+ 1 1))
+  > EOF
+
+  $ judge $PWD/foo.janet foo.janet ./foo.janet
+  ! <dim># $PWD/foo.janet</>
+  ! 
+  ! <red>(test (+ 1 1))</>
+  ! <grn>(test (+ 1 1) 2)</>
+  ! 
+  ! <dim># foo.janet</>
+  ! 
+  ! <red>(test (+ 1 1))</>
+  ! <grn>(test (+ 1 1) 2)</>
+  ! 
+  ! 0 passed 2 failed
+  [1]

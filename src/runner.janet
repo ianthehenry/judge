@@ -14,8 +14,8 @@
           (each entry (os/dir path)
             (find-all-janet-files (string path "/" entry) false results)))
       :file
-        (when (or explicit (not= (util/basename path) "project.janet"))
-          (if (string/has-suffix? ".janet" path) (array/push results path)))
+        (when (or explicit (and (not= (util/basename path) "project.janet") (string/has-suffix? ".janet" path)))
+          (array/push results path))
       nil (array/push results [(string/format "could not read %q" path)])))
 results)
 
@@ -397,7 +397,7 @@ results)
         :when (not (in (ctx :file-cache) file))]
     (def prefix (if (string/has-prefix? "/" file) "@" "/"))
     (try
-      (require (string prefix (util/chop-ext file)))
+      (require file :loader :source)
       ([e fib]
         (put (ctx :files-in-error) file true)
         (debug/stacktrace fib e ""))))

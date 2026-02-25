@@ -75,12 +75,6 @@
   [(but-last (string/split "/" path))
    (basename path)])
 
-(defn chop-ext [path]
-  (def [dir base] (split-path path))
-  (def components (string/split "." base))
-  (def leading (tuple/slice components 0 (- (length components) 1)))
-  (string/join [;dir (string/join leading ".")] "/"))
-
 (defn hidden? [path]
   (string/has-prefix? "." (basename path)))
 
